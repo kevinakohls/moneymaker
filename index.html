@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0c1420">
-<meta name="description" content="Moneymaker: five machines, twenty days. Find the constraint and improve factory profitability.">
+<meta name="description" content="Moneymaker: five machines, three weeks. Find the constraint and improve factory profitability.">
 <title>Moneymaker! — A BufferLogic Learning Experience</title>
 <style>
 :root{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#e9f2f8;background:#0c1420;font-synthesis:none;--accent:#52dbae;--amber:#f5b963;--muted:#9fb4c4;--card:#142234;--line:#2c3e52}
@@ -142,11 +142,18 @@ details p{font-size:12.5px;color:#b3c6d2;line-height:1.6;margin:8px 0 0}
 .history-stats>div{background:#1c3043;padding:11px;border-radius:9px}
 .history-stats small{display:block;font-size:11px;color:#9cb5c5}
 .history-stats strong{font-size:20px;display:block;margin-top:5px}
-.bars{display:flex;align-items:end;gap:4px;height:130px;margin-top:16px;padding:0 0 16px;border-bottom:1px solid #3b5366;position:relative}
-.daybar{flex:1;background:#5ad7ae;opacity:.85;border-radius:3px 3px 0 0;min-height:2px;position:relative}
-.daybar span{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-size:9px;color:#89a2b4}
-.goal-line{position:absolute;left:0;right:0;border-top:1px dashed #dca45e;pointer-events:none}
-.bars-empty{font-size:12px;color:#9ab0c1;margin:auto}
+.delta{display:block;font-size:11px;color:#a9bfcd;margin-top:3px;font-weight:600}
+.chart-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:14px;font-size:11.5px;color:#b6c7d4}
+.chart-legend i{display:inline-block;vertical-align:middle;margin-right:6px}
+.lg-bar{width:9px;height:11px;background:#2f9e7c;border-radius:2px 2px 0 0}
+.lg-avg{width:18px;height:0;border-top:2px solid #6f9cf0}
+.lg-goal{width:18px;height:0;border-top:1.5px dashed #8aa0b2}
+.lg-imp{font-size:10px;color:#e9f2f8;margin-right:6px}
+.chart{position:relative;margin-top:6px;min-height:170px}
+.chart svg{display:block;width:100%;touch-action:pan-y}
+.chart-empty{font-size:12px;color:#9ab0c1;padding:60px 0;text-align:center}
+.chart-tip{position:absolute;top:4px;pointer-events:none;background:#0d1a27;border:1px solid #46657a;border-radius:8px;padding:7px 9px;font-size:12px;line-height:1.45;color:#e9f2f8;white-space:nowrap;box-shadow:0 6px 18px #0007;z-index:2}
+.chart-tip b{font-weight:800}
 footer{font-size:11px;color:#7d90a2;text-align:center;padding:6px 0 28px}
 /* modals */
 .modal-backdrop{position:fixed;inset:0;z-index:10;background:#07101add;display:flex;align-items:center;justify-content:center;padding:14px}
@@ -203,11 +210,11 @@ footer{font-size:11px;color:#7d90a2;text-align:center;padding:6px 0 28px}
   <button id="howButton" class="text-button" type="button">How to play ⓘ</button>
 </header>
 <main>
-<section class="hero"><h1>MONEYMAKER<span class="bang">!</span></h1><p>Five machines. Twenty days. Can you improve factory profitability?</p></section>
+<section class="hero"><h1>MONEYMAKER<span class="bang">!</span></h1><p>Five machines. Three weeks. Can you improve factory profitability?</p></section>
 
 <section class="scoregrid" aria-label="Scoreboard">
-  <div class="scorebox"><span class="scorelabel">DAY</span><strong id="dayCount">0 <small>/ 20</small></strong><div class="meter"><div id="dayMeter"></div></div></div>
-  <div class="scorebox"><span class="scorelabel">SHIPPED / TARGET</span><strong id="shippedCount">0 <small>/ 85</small></strong><div class="meter"><div id="shipMeter"></div></div></div>
+  <div class="scorebox"><span class="scorelabel">DAY</span><strong id="dayCount">0 <small>/ 21</small></strong><div class="meter"><div id="dayMeter"></div></div></div>
+  <div class="scorebox"><span class="scorelabel">SHIPPED / TARGET</span><strong id="shippedCount">0 <small>/ 90</small></strong><div class="meter"><div id="shipMeter"></div></div></div>
   <div class="scorebox"><span class="scorelabel">NET PROFIT</span><strong id="profitCount">$0</strong><div class="meter" aria-hidden="true" style="visibility:hidden"><div></div></div></div>
 </section>
 
@@ -247,13 +254,13 @@ footer{font-size:11px;color:#7d90a2;text-align:center;padding:6px 0 28px}
   </div>
   <div class="card small-card">
     <div class="eyebrow">YOUR RECORDS · THIS BROWSER</div><h2>Can you do better?</h2>
-    <div class="record"><span>All-time best (day 20)</span><strong id="bestAll">—</strong></div>
+    <div class="record"><span>All-time best (day 21)</span><strong id="bestAll">—</strong></div>
     <div class="record"><span id="monthLabel">Best this month</span><strong id="bestMonth">—</strong></div>
     <div class="replay">
       <button type="button" id="replayButton" class="secondary">Play Again</button>
       <button type="button" id="differentButton" class="secondary">Different Plant</button>
       <button type="button" id="resetButton" class="ghost">Same Rolls</button>
-      <button type="button" id="resultsButton" class="ghost" disabled>Day-20 results</button>
+      <button type="button" id="resultsButton" class="ghost" disabled>Day-21 results</button>
     </div>
     <p class="footnote"><strong>Play Again:</strong> same plant, new dice rolls. <strong>Different Plant:</strong> the same five machines in new positions. <strong>Same Rolls:</strong> restart this plant with the identical dice sequence to compare strategies. All improvements reset.</p>
     <p class="note">Scores and your game in progress are saved only in this browser on this device. Clearing browser data, using a private window, or switching devices starts you over.</p>
@@ -263,12 +270,13 @@ footer{font-size:11px;color:#7d90a2;text-align:center;padding:6px 0 28px}
 <section class="card" style="margin-bottom:18px">
   <div class="section-heading"><div><div class="eyebrow">LEARN FROM THE FACTORY</div><h2>Shipments over time</h2></div><span id="upgradeCount" class="footnote">0 improvements</span></div>
   <div class="history-stats">
-    <div><small>Shipped, last 7 days</small><strong id="ship7">—</strong></div>
+    <div><small>7-day average</small><strong id="ship7">—</strong><span id="ship7delta" class="delta"></span></div>
     <div><small>Total WIP</small><strong id="totalWip">16</strong></div>
     <div><small>Days played</small><strong id="allDays">0</strong></div>
   </div>
-  <div class="bars" id="dailyBars" aria-label="Daily shipments chart"></div>
-  <p class="note">Bars show daily shipments. The dashed line is the average pace needed to hit the target in 20 days. A great day at one station is not a great day for the factory.</p>
+  <div class="chart-legend" aria-hidden="true"><span><i class="lg-bar"></i>Shipped each day</span><span><i class="lg-avg"></i>7-day average</span><span><i class="lg-goal"></i>Target pace (<span id="paceTxt">4.3</span>/day)</span><span><b class="lg-imp">▲</b>Improvement took effect</span></div>
+  <div class="chart" id="chart"><div class="chart-tip" id="chartTip" hidden></div></div>
+  <p class="note">Daily shipments bounce around with the dice. Watch the <strong>blue 7-day average</strong>: if an improvement worked, the line climbs after the ▲. The shaded area after day 21 is free play and doesn't count toward your record.</p>
 </section>
 </main>
 <footer>© <span id="year"></span> BufferLogic · Moneymaker is a learning simulation, not a forecasting tool.</footer>
@@ -283,8 +291,8 @@ footer{font-size:11px;color:#7d90a2;text-align:center;padding:6px 0 28px}
       <li>Five machines work in a line. Each day, each one rolls hidden dice to decide how much it <em>could</em> make. It can only work on material that was waiting for it at the start of the day.</li>
       <li>Press <strong>Advance 1 Day</strong> or <strong>Advance 7 Days</strong> and watch the crates. <strong>Watch where crates pile up.</strong></li>
       <li>Tap a machine, then choose <strong>Raise Minimum</strong> (better bad days) or <strong>Raise Maximum</strong> (better good days). Each improvement costs <span class="costTxt">$1,000</span>.</li>
-      <li>Ship at least <span class="targetTxt">85</span> units and finish day 20 with as much net profit as you can. Customers will buy everything you ship.</li>
-      <li>You can keep playing after day 20, but only day 20 counts toward your record.</li>
+      <li>Ship at least <span class="targetTxt">90</span> units and finish day 21 (three weeks) with as much net profit as you can. Customers will buy everything you ship.</li>
+      <li>You can keep playing after day 21, but only day 21 counts toward your record. The 7-day average line on the chart shows whether your changes are working.</li>
     </ul>
     <button type="button" class="primary" data-close>Let's make some money →</button>
   </div>
@@ -293,7 +301,7 @@ footer{font-size:11px;color:#7d90a2;text-align:center;padding:6px 0 28px}
 <div id="resultModal" class="modal-backdrop" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
     <button type="button" class="modal-close" data-close aria-label="Close">✕</button>
-    <div class="eyebrow">DAY 20 · RESULTS</div>
+    <div class="eyebrow">DAY 21 · RESULTS</div>
     <div id="resultBody"></div>
   </div>
 </div>
@@ -311,7 +319,7 @@ footer{font-size:11px;color:#7d90a2;text-align:center;padding:6px 0 28px}
 (() => {
 /* ---------- 1. Configuration (hidden machine dice live here) ---------- */
 const CONFIG = {
-  DAY_LIMIT: 20, TARGET: 85,
+  DAY_LIMIT: 21, TARGET: 90,
   UNIT_THROUGHPUT: 400, DAILY_OE: 1000, IMPROVEMENT_COST: 1000,
   INITIAL_WIP: [4,4,4,4],
   // Flat (uniform) integer dice ranges. Drill is the built-in constraint.
@@ -323,7 +331,7 @@ const CONFIG = {
     {id:4, name:"Packing robot",  lo:3, hi:10}
   ],
   PLANT_ORDERS: [[0,1,2,3,4],[3,0,4,2,1],[2,4,0,3,1],[4,2,1,0,3],[1,3,0,4,2]],
-  STORAGE_KEY: "moneymaker-v2-state", RECORDS_KEY: "moneymaker-v2-records"
+  STORAGE_KEY: "moneymaker-v3-state", RECORDS_KEY: "moneymaker-v3-records"
 };
 const {DAY_LIMIT,TARGET,UNIT_THROUGHPUT,DAILY_OE,IMPROVEMENT_COST} = CONFIG;
 
@@ -334,7 +342,7 @@ const avgOf=m=>(m.lo+m.hi)/2;
 const rollFor=(m,seed,day)=>m.lo+Math.floor(pseudoRandom(seed,day,m.id)*(m.hi-m.lo+1));
 
 function createGame(order=[0,1,2,3,4],seed=randomSeed(),plant=0){
-  return {version:2,order:order.slice(),seed,plant,day:0,wip:CONFIG.INITIAL_WIP.slice(),
+  return {version:3,order:order.slice(),seed,plant,day:0,wip:CONFIG.INITIAL_WIP.slice(),
     machines:CONFIG.MACHINES.map(m=>({id:m.id,lo:m.lo,hi:m.hi})),
     shipments:0,spending:0,upgrades:[],daily:[],finished:null};
 }
@@ -371,7 +379,7 @@ function pileGap(s){ // inbound pile minus outbound pile, per station (station 1
 }
 function baselineProfit(order,seed){ const b=createGame(order,seed); for(let d=0;d<DAY_LIMIT;d++)stepDay(b); return {profit:profitOf(b),shipments:b.shipments}; }
 const nextOrder=o=>{const L=CONFIG.PLANT_ORDERS;const i=L.findIndex(p=>p.every((v,j)=>v===o[j]));return L[(i+1)%L.length].slice()};
-function validSaved(x){return !!(x&&x.version===2&&Array.isArray(x.order)&&x.order.length===5&&new Set(x.order).size===5&&
+function validSaved(x){return !!(x&&x.version===3&&Array.isArray(x.order)&&x.order.length===5&&new Set(x.order).size===5&&
   Array.isArray(x.machines)&&x.machines.length===5&&x.machines.every((m,i)=>m.id===i&&Number.isInteger(m.lo)&&Number.isInteger(m.hi)&&m.lo>=0&&m.hi>m.lo)&&
   Array.isArray(x.wip)&&x.wip.length===4&&x.wip.every(n=>Number.isInteger(n)&&n>=0)&&Number.isInteger(x.day)&&Array.isArray(x.daily)&&x.daily.length===x.day&&Number.isInteger(x.seed))}
 
@@ -698,7 +706,10 @@ function renderNumbers(){
   $("bestMonth").textContent=r.months&&r.months[mk]?money(r.months[mk].profit):"—";
   $("monthLabel").textContent=`Best in ${new Date().toLocaleString("en-US",{month:"long"})}`;
   $("upgradeCount").textContent=`${state.upgrades.length} improvement${state.upgrades.length===1?"":"s"}`;
-  $("ship7").textContent=state.daily.length?state.daily.slice(-7).reduce((s,d)=>s+d.shipped,0):"—";
+  if(state.daily.length){const av=movingAvg(state.daily);const cur=av.at(-1).v;$("ship7").textContent=cur.toFixed(1)+"/day";
+    const prev=state.daily.length>=14?av[state.daily.length-8].v:null;
+    $("ship7delta").textContent=prev===null?(state.daily.length<7?"first week":"vs prior week after day 14"):`${cur>prev+0.05?"▲":cur<prev-0.05?"▼":"■"} ${Math.abs(cur-prev).toFixed(1)} vs prior 7 days`;}
+  else {$("ship7").textContent="—";$("ship7delta").textContent="";}
   $("totalWip").textContent=state.wip.reduce((a,b)=>a+b,0);
   $("allDays").textContent=state.day;
   const after=state.day>=DAY_LIMIT;
@@ -709,12 +720,63 @@ function renderNumbers(){
   if(!uiState.busy) $("resultsButton").disabled=!state.finished;
   renderBars(); renderUpgradePanel();
 }
+/* Shipments chart: daily bars + trailing 7-day average + target pace,
+   improvement markers, and shaded free play after the scored round. */
+function movingAvg(daily,k=7){return daily.map((_,i)=>{const w=daily.slice(Math.max(0,i-k+1),i+1);return {v:w.reduce((a,d)=>a+d.shipped,0)/w.length,full:w.length===k}})}
 function renderBars(){
-  const bars=$("dailyBars"); bars.replaceChildren();
-  if(!state.daily.length){const n=document.createElement("div");n.className="bars-empty";n.textContent="Advance a day to see shipments over time.";bars.append(n);return}
-  const recent=state.daily.slice(-20), max=Math.max(10,...recent.map(r=>r.shipped));
-  const line=document.createElement("div");line.className="goal-line";line.style.bottom=`${(16+114*TARGET/DAY_LIMIT/max).toFixed(1)}px`;bars.append(line);
-  recent.forEach(r=>{const b=document.createElement("div");b.className="daybar";b.style.height=`${Math.max(2,r.shipped/max*100)}%`;b.title=`Day ${r.day}: ${r.shipped} shipped`;b.setAttribute("aria-label",b.title);const t=document.createElement("span");t.textContent=r.day;b.append(t);bars.append(b)});
+  const box=$("chart"), tip=$("chartTip");
+  [...box.children].forEach(c=>{if(c!==tip)c.remove()}); tip.hidden=true;
+  $("paceTxt").textContent=(TARGET/DAY_LIMIT).toFixed(1);
+  if(!state.daily.length){const n=document.createElement("div");n.className="chart-empty";n.textContent="Advance a day to see shipments over time.";box.append(n);return}
+  const MAXD=63, all=state.daily, avgAll=movingAvg(all);
+  const first=Math.max(0,all.length-MAXD), days=all.slice(first), avg=avgAll.slice(first), N=days.length;
+  const W=Math.max(280,box.clientWidth||600), narrow=W<520, H=narrow?175:200;
+  const m={l:26,r:narrow?58:74,t:12,b:24}, pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const yMax=Math.max(8,Math.ceil((Math.max(...days.map(d=>d.shipped),TARGET/DAY_LIMIT)+1)/2)*2);
+  const y=v=>m.t+ph-(v/yMax)*ph, bw=pw/N, x=i=>m.l+bw*i+bw/2;
+  const svg=S("svg",{viewBox:`0 0 ${W} ${H}`,width:W,height:H,role:"img"});
+  const last=avg[N-1];
+  svg.setAttribute("aria-label",`Daily shipments for days ${days[0].day} to ${days[N-1].day}. Latest 7-day average ${last.v.toFixed(1)} units per day; target pace ${(TARGET/DAY_LIMIT).toFixed(1)}.`);
+  // free-play shading after the scored round
+  const lockIdx=days.findIndex(d=>d.day>DAY_LIMIT);
+  if(lockIdx>=0){const x0=m.l+bw*lockIdx;S("rect",{x:x0,y:m.t,width:m.l+pw-x0,height:ph,fill:"#ffffff",opacity:.045},svg);
+    S("line",{x1:x0,x2:x0,y1:m.t,y2:m.t+ph,stroke:"#8aa0b2","stroke-dasharray":"2 3"},svg);
+    const t=S("text",{x:x0+4,y:m.t+10,"font-size":10,fill:"#a9bfcd"},svg);t.textContent=lockIdx>0?`Free play →`:"Free play"}
+  // recessive grid + y labels
+  const step=yMax<=10?2:yMax<=20?4:5;
+  for(let v=0;v<=yMax;v+=step){S("line",{x1:m.l,x2:m.l+pw,y1:y(v),y2:y(v),stroke:v?"#24364a":"#3b5366"},svg);
+    const t=S("text",{x:m.l-6,y:y(v)+3.5,"text-anchor":"end","font-size":10,fill:"#8aa0b2"},svg);t.textContent=v}
+  // bars (4px rounded data end, 2px gap)
+  const barW=Math.max(1.5,Math.min(22,bw-2));
+  days.forEach((d,i)=>{const h=Math.max(0,y(0)-y(d.shipped));if(!h)return;const r=Math.min(3,barW/2,h);const x0=x(i)-barW/2,y0=y(d.shipped);
+    S("path",{d:`M${x0},${y(0)}V${y0+r}Q${x0},${y0} ${x0+r},${y0}H${x0+barW-r}Q${x0+barW},${y0} ${x0+barW},${y0+r}V${y(0)}Z`,fill:"#2f9e7c"},svg)});
+  // target pace
+  S("line",{x1:m.l,x2:m.l+pw,y1:y(TARGET/DAY_LIMIT),y2:y(TARGET/DAY_LIMIT),stroke:"#8aa0b2","stroke-width":1.5,"stroke-dasharray":"5 4"},svg);
+  // 7-day average: dashed while the window is still filling (first 6 days), solid after
+  const pts=avg.map((a,i)=>[x(i),y(a.v)]);
+  const seg=(from,to,dash)=>{if(to-from<1)return;S("polyline",{points:pts.slice(from,to+1).map(p=>p.join(",")).join(" "),fill:"none",stroke:"#6f9cf0","stroke-width":2,"stroke-linejoin":"round","stroke-linecap":"round",...(dash?{"stroke-dasharray":"3 3"}:{})},svg)};
+  const firstFull=avg.findIndex(a=>a.full);
+  if(firstFull<0) seg(0,N-1,true); else {seg(0,firstFull,true);seg(firstFull,N-1,false)}
+  const [ex,ey]=pts[N-1];
+  S("circle",{cx:ex,cy:ey,r:4,fill:"#6f9cf0",stroke:"#142234","stroke-width":2},svg);
+  const lab=S("text",{x:m.l+pw+8,y:Math.max(m.t+10,Math.min(m.t+ph-4,ey+4)),"font-size":11,"font-weight":800,fill:"#e9f2f8"},svg);lab.textContent=`${last.v.toFixed(1)}/day`;
+  const lab2=S("text",{x:m.l+pw+8,y:Math.max(m.t+10,Math.min(m.t+ph-4,ey+4))+12,"font-size":9.5,fill:"#a9bfcd"},svg);lab2.textContent="7-day avg";
+  // improvement markers: an improvement made on day d takes effect on day d+1
+  const impByDay={};state.upgrades.forEach(u=>{(impByDay[u.day+1]=impByDay[u.day+1]||[]).push(u)});
+  days.forEach((d,i)=>{if(impByDay[d.day]){const t=S("text",{x:x(i),y:m.t+ph+10,"text-anchor":"middle","font-size":9,fill:"#e9f2f8"},svg);t.textContent="▲"}});
+  // x labels: day 1 and each week boundary
+  days.forEach((d,i)=>{if(d.day===days[0].day||d.day%7===0){const t=S("text",{x:x(i),y:H-4,"text-anchor":"middle","font-size":10,fill:"#8aa0b2"},svg);t.textContent=d.day%7===0?`Day ${d.day}`:d.day}});
+  // hover / tap layer: crosshair + tooltip
+  const cross=S("line",{y1:m.t,y2:m.t+ph,stroke:"#d2e1ea","stroke-width":1,opacity:0},svg);
+  const hit=S("rect",{x:m.l,y:m.t,width:pw,height:ph+12,fill:"transparent"},svg);
+  const show=e=>{const r=svg.getBoundingClientRect();const px=(e.clientX-r.left)*(W/r.width);const i=Math.max(0,Math.min(N-1,Math.floor((px-m.l)/bw)));
+    const d=days[i],a=avg[i];cross.setAttribute("x1",x(i));cross.setAttribute("x2",x(i));cross.setAttribute("opacity",.5);
+    const imps=(impByDay[d.day]||[]).map(u=>`Station ${u.position+1} ${u.kind==="min"?"minimum":"maximum"}`);
+    tip.innerHTML=`<b>Day ${d.day}</b>${d.day>DAY_LIMIT?" · free play":""}<br>Shipped: <b>${d.shipped}</b><br>7-day average: <b>${a.v.toFixed(1)}</b>${a.full?"":" (first week)"}${imps.length?`<br>▲ Improved: ${imps.join(", ")}`:""}`;
+    tip.hidden=false;const tx=x(i)/W*r.width;const tw=tip.offsetWidth;tip.style.left=Math.max(0,Math.min(r.width-tw,tx+(tx>r.width/2?-tw-12:12)))+"px"};
+  hit.addEventListener("pointermove",show);hit.addEventListener("pointerdown",show);
+  hit.addEventListener("pointerleave",()=>{tip.hidden=true;cross.setAttribute("opacity",0)});
+  box.insertBefore(svg,tip);
 }
 function renderUpgradePanel(){
   const panel=$("upgradePanel");
@@ -755,7 +817,7 @@ function doImprove(kind){
   if(uiState.busy||uiState.selected===null) return;
   const pos=uiState.selected, res=applyImprovement(state,pos,kind);
   if(!res.ok){setMessage(`Station ${pos+1} is already highly consistent, so Raise Minimum is unavailable. Raise Maximum is still available.`);renderUpgradePanel();return}
-  setMessage(`Station ${pos+1}: ${kind==="min"?"minimum":"maximum"} raised for ${money(IMPROVEMENT_COST)}. Advance and watch whether shipments, and profit, respond.${state.day>=DAY_LIMIT?" (Free play: your day-20 record is locked.)":""}`);
+  setMessage(`Station ${pos+1}: ${kind==="min"?"minimum":"maximum"} raised for ${money(IMPROVEMENT_COST)}. Advance and watch whether shipments, and profit, respond.${state.day>=DAY_LIMIT?" (Free play: your day-${DAY_LIMIT} record is locked.)":""}`);
   save(); renderNumbers(); refreshScene();
 }
 
@@ -779,10 +841,10 @@ async function advance(n){
       (k<n-1?` (Day ${k+1} of ${n})`:""));
   }
   uiState.busy=false; renderNumbers();
-  if(hit20){ setMessage(`Day 20 complete: ${state.shipments} shipped, net profit ${money(state.finished.profit)}. Your record is saved. Keep experimenting or start a new game.`); showResults(); }
+  if(hit20){ setMessage(`Day ${DAY_LIMIT} complete: ${state.shipments} shipped, net profit ${money(state.finished.profit)}. Your record is saved. Keep experimenting or start a new game.`); showResults(); }
 }
 
-/* ---------- 11. Day-20 results, recognition and reveal ---------- */
+/* ---------- 11. Day-21 results, recognition and reveal ---------- */
 function showResults(){
   const f=state.finished; if(!f) return;
   f.seen=true; save();
@@ -791,7 +853,7 @@ function showResults(){
   const recog=f.metTarget||f.newBest;
   const delta=f.profit-f.baseline.profit;
   h.innerHTML=(recog?`<div class="banner"><strong>You're a Moneymaker!</strong><span>${[f.metTarget?`You hit the ${TARGET}-unit target`:null,f.newBest?`New personal best (previous ${money(f.prevBest)})`:null].filter(Boolean).join(" · ")}</span></div>`:"")+
-   `<h2 id="resultTitle">${recog?"Profit delivered.":"Day 20 complete."}</h2>
+   `<h2 id="resultTitle">${recog?"Profit delivered.":`Day ${DAY_LIMIT} complete.`}</h2>
    <div class="result-grid"><div><small>Net profit</small><strong>${money(f.profit)}</strong></div><div><small>Shipped / target</small><strong>${f.shipments} / ${TARGET}</strong></div><div><small>Improvements</small><strong>${f.upgrades} (${money(f.spending)})</strong></div></div>
    <p>With <strong>no improvements</strong>, these exact dice rolls would have earned <strong>${money(f.baseline.profit)}</strong> (${f.baseline.shipments} shipped). Your decisions ${delta>=0?"added":"cost"} <strong>${money(Math.abs(delta))}</strong>.</p>
    ${!f.metTarget?`<p>Missed the target? Look for the station with a big pile of crates in front of it and a small pile after it.</p>`:""}`;
@@ -864,11 +926,13 @@ document.querySelectorAll(".targetTxt").forEach(e=>e.textContent=TARGET);
 document.querySelectorAll(".tpRate2").forEach(e=>e.textContent=money(UNIT_THROUGHPUT));
 $("tpRate").textContent=money(UNIT_THROUGHPUT); $("oeRate").textContent=money(DAILY_OE);
 let lastNarrow=null;
-window.addEventListener("resize",()=>{const n=isNarrow();if(n!==lastNarrow&&!uiState.busy){lastNarrow=n;buildScene()}});
+let chartTimer=null;
+window.addEventListener("resize",()=>{const n=isNarrow();if(n!==lastNarrow&&!uiState.busy){lastNarrow=n;buildScene()}
+  clearTimeout(chartTimer);chartTimer=setTimeout(renderBars,120)});
 
 lastNarrow=isNarrow(); buildScene(); renderNumbers();
 setMessage(!state.day?"Press Advance 1 Day and watch the crates move. Where do they pile up?":
-  state.day>=DAY_LIMIT?`Your day-20 score is ${money(state.finished?state.finished.profit:profitOf(state))}. Keep experimenting or start a new game.`:`Game restored at day ${state.day}.`);
+  state.day>=DAY_LIMIT?`Your day-${DAY_LIMIT} score is ${money(state.finished?state.finished.profit:profitOf(state))}. Keep experimenting or start a new game.`:`Game restored at day ${state.day}.`);
 
 /* Test hook (pure rules + read-only views); not used by the interface. */
 window.__moneymaker={CONFIG,createGame,stepDay,applyImprovement,profitOf,oeeOf,pileGap,baselineProfit,nextOrder,pseudoRandom,rollFor,
