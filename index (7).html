@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0c1420">
+<meta name="description" content="Moneymaker: five machines, twenty days. Find the constraint and improve factory profitability.">
+<title>Moneymaker! — A BufferLogic Learning Experience</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#e9f2f8;background:#0c1420;font-synthesis:none;--accent:#52dbae;--amber:#f5b963;--muted:#9fb4c4;--card:#142234;--line:#2c3e52}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse 70% 22% at 50% -8%,#164f56 0,transparent 90%),#0c1420;-webkit-tap-highlight-color:transparent}
+button{font:inherit;cursor:pointer}
+button:disabled{opacity:.42;cursor:not-allowed}
+button:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:3px solid #65e4bd;outline-offset:3px}
+.shell{max-width:1080px;margin:auto;padding:0 18px}
+.brand{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #22303f}
+.identity{display:flex;gap:9px;align-items:center;opacity:.8}
+.logo{width:26px;height:22px;display:flex;align-items:flex-end;gap:3px;transform:skew(-12deg)}
+.logo span{width:6px;border-radius:2px;background:#52dba5}
+.logo span:nth-child(1){height:10px}.logo span:nth-child(2){height:19px;background:#a9ecd7}.logo span:nth-child(3){height:14px}
+.brand-sub{color:#93a8b8;font-size:11px;letter-spacing:.04em}
+.text-button{white-space:nowrap;background:none;border:0;color:#a8c5d5;font-size:13px;text-decoration:underline;text-underline-offset:4px;padding:8px 4px}
+.hero{text-align:center;padding:16px 0 12px}
+.hero h1{font-size:clamp(34px,6vw,56px);margin:0;line-height:1.05;letter-spacing:-.04em;font-weight:900}
+.bang{color:var(--accent)}
+.hero p{color:#c3d3df;margin:6px 0 0;font-size:15px;font-weight:600}
+.scoregrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.scorebox,.card{border:1px solid var(--line);background:var(--card);border-radius:14px}
+.scorebox{padding:11px 16px}
+.scorelabel{display:block;font-size:11px;font-weight:800;letter-spacing:.1em;color:#a7bbcb}
+.scorebox strong{display:block;font-size:clamp(21px,3.4vw,30px);letter-spacing:-.03em;margin:4px 0 0;font-variant-numeric:tabular-nums}
+.scorebox strong.neg{color:#ff9b8a}
+.scorebox small{font-size:14px;color:#7896aa;font-weight:600;letter-spacing:0}
+.meter{height:5px;border-radius:5px;background:#29394b;overflow:hidden;margin-top:8px}
+.meter>div{width:0;height:100%;background:var(--accent);transition:width .3s}
+.card{padding:18px;margin-bottom:12px}
+.eyebrow{font-size:11px;letter-spacing:.14em;font-weight:800;color:#69d9b2}
+.section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.section-heading h2,.small-card h2{font-size:19px;line-height:1.2;margin:4px 0 2px}
+.head-tools{display:flex;gap:8px;align-items:center}
+.pill{background:#213549;border:1px solid #35536b;border-radius:22px;padding:9px 14px;color:#d4edf4;font-size:13px;font-weight:750;min-height:40px}
+.pill[aria-pressed="true"]{background:#23453f;border-color:var(--accent);color:#bff5df}
+.plant-tag{font-size:12px;font-weight:800;color:#bcd3e0;background:#1b2c3e;border:1px solid #2f465b;border-radius:20px;padding:8px 12px}
+/* Factory scene */
+.scene-wrap{margin-top:12px;border:1px solid #2e4658;border-radius:12px;background:linear-gradient(#13283a,#0f2232);overflow:hidden;position:relative}
+#scene{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none;margin:auto}
+.scene-wrap.narrow #scene{max-width:540px}
+#scene text{font-family:inherit}
+.st-hit{fill:transparent;cursor:pointer}
+.station:hover .st-frame{stroke:#83c9b2}
+.station:focus{outline:none}
+.station:focus-visible .st-frame{stroke:#65e4bd;stroke-width:3}
+.st-frame{fill:#183247;stroke:#3f6072;stroke-width:1.5}
+.station.selected .st-frame{stroke:var(--accent);stroke-width:3;fill:#1d3d3a}
+.pick-me .st-frame{animation:pick 1s ease-in-out 3}
+@keyframes pick{50%{stroke:#f7d48a;stroke-width:3}}
+.station.idle .machine{opacity:.55}
+.st-label{fill:#c7e5e4;font-size:11px;font-weight:800;letter-spacing:.09em}
+.st-num{fill:#76e5bc;font-size:28px;font-weight:900}
+.st-sub{fill:#a9bac8;font-size:10px}
+.st-status{font-size:10px;font-weight:700;fill:#8fd8bc}
+.st-status.starved{fill:#f5b963}
+.st-status.idle{fill:#ff9b8a}
+.st-oee{font-size:11px;font-weight:800;fill:#c9b8ff}
+.wip-num{font-weight:900;fill:#f7c779}
+.wip-num.high{fill:#ff9f68}.wip-num.vhigh{fill:#ff7a6b}
+.wip-lbl{fill:#afc1cb;font-size:9px;font-weight:700;letter-spacing:.08em}
+.overflow{fill:#ffdca3;font-size:10px;font-weight:900}
+.belt{fill:#203746;stroke:#658a9b;stroke-width:1.5}
+.belt-stripes{stroke:#4d7487;stroke-width:2;stroke-dasharray:3 6}
+.running-belts .belt-stripes{animation:belt .35s linear infinite}
+@keyframes belt{to{stroke-dashoffset:-9}}
+.dock-num{fill:#62e7b4;font-size:26px;font-weight:900}
+.money-float{fill:#7ff0c3;font-size:15px;font-weight:900;paint-order:stroke;stroke:#0c1a26;stroke-width:3px}
+/* machine parts — animate only while a machine is actually processing */
+.machine{overflow:visible}
+.mm-spin,.mm-smoke{transform-box:fill-box;transform-origin:center}
+.mm-arm{transform-box:view-box;transform-origin:60px 70px}
+.running .mm-ram{animation:ram var(--cyc,.5s) ease-in-out infinite}
+.running .mm-spin{animation:spin var(--cyc,.5s) linear infinite}
+.running .mm-tool{animation:tool calc(var(--cyc,.5s)*2) ease-in-out infinite}
+.running .mm-drill{animation:drill var(--cyc,.5s) ease-in-out infinite}
+.running .mm-bit{animation:bit calc(var(--cyc,.5s)/2) linear infinite}
+.mm-glow{opacity:.25}
+.running .mm-glow{animation:glow var(--cyc,.5s) ease-in-out infinite alternate}
+.mm-smoke{opacity:0}
+.running .mm-smoke{animation:smoke calc(var(--cyc,.5s)*2) ease-out infinite}
+.running .mm-smoke.s2{animation-delay:calc(var(--cyc,.5s)*-1)}
+.running .mm-arm{animation:arm calc(var(--cyc,.5s)*1.4) ease-in-out infinite}
+.running .mm-lamp{fill:#6bff9d}
+@keyframes ram{0%,100%{transform:translateY(0)}50%{transform:translateY(18px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes tool{0%,100%{transform:translateX(0)}50%{transform:translateX(-14px)}}
+@keyframes drill{0%,100%{transform:translateY(0)}50%{transform:translateY(12px)}}
+@keyframes bit{to{stroke-dashoffset:-8}}
+@keyframes glow{from{opacity:.35}to{opacity:1}}
+@keyframes smoke{0%{opacity:.7;transform:translateY(0) scale(.6)}100%{opacity:0;transform:translateY(-16px) scale(1.4)}}
+@keyframes arm{0%,100%{transform:rotate(-28deg)}50%{transform:rotate(22deg)}}
+.tap-hint{text-align:center;margin:10px 0 0;font-size:13px;font-weight:700;color:#bfe9d8}
+.station-picks{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+.station-pick{border:1px solid #46657b;background:#223a4f;border-radius:10px;padding:10px 6px;color:#e2f0f6;min-height:58px;text-align:center}
+.station-pick:hover:not(:disabled){background:#2b5063;border-color:#83c9b2}
+.station-pick strong{display:block;font-size:14px}.station-pick span{display:block;font-size:11px;color:#a9c0cf;margin-top:3px}
+.legend{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:10px;font-size:11px;color:#a4b8c6}
+.legend i{display:inline-block;width:10px;height:9px;margin-right:6px;border-radius:2px;vertical-align:-1px}
+/* controls */
+.controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px}
+button.primary,button.secondary,button.ghost{border-radius:10px;padding:13px 12px;font-size:15px;font-weight:800;min-height:50px}
+button.primary{background:var(--accent);color:#08221c;border:1px solid var(--accent)}
+button.primary:hover:not(:disabled){background:#71f0c1}
+button.secondary{color:#d9eef1;background:#253c50;border:1px solid #46657b}
+button.secondary:hover:not(:disabled){background:#2b5063}
+button.ghost{color:#b4c9d4;background:transparent;border:1px solid #344b60}
+.status{color:#d2e1ea;font-size:14px;min-height:22px;line-height:1.5;margin:12px 0 0}
+.panel{margin-top:12px;background:#1a2b3d;padding:14px;border:1px solid #29465b;border-radius:10px}
+.panel[hidden]{display:none}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.panel-title{font-weight:800;font-size:15px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.choice{border:1px solid #477364;background:#234437;border-radius:10px;text-align:left;padding:12px;color:#e2f6eb;min-height:64px}
+.choice.upper{border-color:#436582;background:#203a53}
+.choice strong{display:block;font-size:15px}
+.choice span{display:block;font-size:12px;color:#c2d9cf;margin-top:4px;line-height:1.4}
+.panel p{font-size:13px;color:#b7cad6;line-height:1.55;margin:8px 0 0}
+.oee-panel p{margin-top:0}
+.lower{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.small-card{margin-bottom:12px}
+.ledger{margin-top:12px}
+.ledger>div,.record{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #2a3a4d;font-size:13px}
+.ledger span,.record span{color:#b6c7d4}
+.ledger strong,.record strong{font-size:15px;font-variant-numeric:tabular-nums}
+.ledger-total strong{color:#62e7b4;font-size:20px}
+.note{font-size:12px;color:#9fb3c1;line-height:1.6;margin:12px 0 0}
+details{margin-top:12px;background:#1a2b3d;border:1px solid #29465b;border-radius:10px;padding:10px 12px}
+summary{cursor:pointer;font-weight:700;font-size:13px;color:#cfe6ee}
+details p{font-size:12.5px;color:#b3c6d2;line-height:1.6;margin:8px 0 0}
+.replay{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.replay .wide{grid-column:1/-1}
+.footnote{font-size:11px;color:#8aa2b4;line-height:1.5}
+.history-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.history-stats>div{background:#1c3043;padding:11px;border-radius:9px}
+.history-stats small{display:block;font-size:11px;color:#9cb5c5}
+.history-stats strong{font-size:20px;display:block;margin-top:5px}
+.bars{display:flex;align-items:end;gap:4px;height:130px;margin-top:16px;padding:0 0 16px;border-bottom:1px solid #3b5366;position:relative}
+.daybar{flex:1;background:#5ad7ae;opacity:.85;border-radius:3px 3px 0 0;min-height:2px;position:relative}
+.daybar span{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-size:9px;color:#89a2b4}
+.goal-line{position:absolute;left:0;right:0;border-top:1px dashed #dca45e;pointer-events:none}
+.bars-empty{font-size:12px;color:#9ab0c1;margin:auto}
+footer{font-size:11px;color:#7d90a2;text-align:center;padding:6px 0 28px}
+/* modals */
+.modal-backdrop{position:fixed;inset:0;z-index:10;background:#07101add;display:flex;align-items:center;justify-content:center;padding:14px}
+.modal-backdrop[hidden]{display:none!important}
+.modal{background:#18293b;border:1px solid #46657a;border-radius:18px;padding:24px;max-width:640px;width:100%;max-height:92vh;overflow:auto;position:relative;box-shadow:0 25px 70px #0008}
+.modal h2{font-size:24px;margin:8px 0 10px}
+.modal p,.modal li{font-size:14px;color:#c3d5df;line-height:1.6}
+.modal ul{padding-left:20px;margin:6px 0}
+.modal-close{position:absolute;right:10px;top:8px;background:transparent;border:0;color:#d4e6ef;font-size:20px;padding:8px;min-width:40px;min-height:40px}
+.modal .primary{width:100%;margin-top:10px}
+.banner{margin:6px 0 12px;padding:14px;border-radius:12px;background:linear-gradient(120deg,#2b6a4f,#1f4f60);border:1px solid #64e2b4;text-align:center;animation:pop .6s ease-out}
+.banner strong{display:block;font-size:24px;letter-spacing:-.02em;color:#fff}
+.banner span{font-size:13px;color:#d4f7e8}
+@keyframes pop{0%{transform:scale(.85);opacity:0}70%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.result-grid div{background:#1f3447;border-radius:10px;padding:10px}
+.result-grid small{display:block;font-size:11px;color:#9cb5c5}
+.result-grid strong{font-size:18px}
+.reveal-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
+.reveal-table th,.reveal-table td{padding:7px 5px;border-bottom:1px solid #2d4457;text-align:left}
+.reveal-table th{color:#9fb6c6;font-weight:700;font-size:11px}
+.reveal-table tr.constraint td{background:#3a2f1c;color:#ffe2ad}
+.tag{display:inline-block;font-size:10px;font-weight:800;border-radius:6px;padding:2px 5px;background:#f5b963;color:#2b1a05;margin-left:4px}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+@media(max-width:700px){
+ .shell{padding:0 10px}
+ .brand{padding:10px 2px}
+ .hero{padding:10px 0 8px}
+ .hero p{font-size:13px}
+ .scoregrid{gap:6px;margin-bottom:8px}
+ .scorebox{padding:8px 10px}
+ .scorelabel{font-size:9.5px;letter-spacing:.04em}
+ .scorebox small{font-size:11px}
+ .card{padding:12px}
+ .scene-wrap{margin-top:8px}
+ .controls{gap:7px;margin-top:10px}
+ button.primary,button.secondary{font-size:14px;padding:11px 6px}
+ .lower{grid-template-columns:1fr;gap:0}
+ .choice strong{font-size:14px}
+ .station-picks{grid-template-columns:repeat(3,1fr);gap:6px}
+ .panel-head{align-items:flex-start}
+ .history-stats{gap:6px}.history-stats>div{padding:8px}.history-stats small{font-size:10px}.history-stats strong{font-size:18px}
+ .result-grid{grid-template-columns:1fr 1fr}
+ .modal{padding:18px}
+ .reveal-table{font-size:11.5px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="brand">
+  <div class="identity"><div class="logo" aria-hidden="true"><span></span><span></span><span></span></div><div class="brand-sub">A BufferLogic Learning Experience</div></div>
+  <button id="howButton" class="text-button" type="button">How to play ⓘ</button>
+</header>
+<main>
+<section class="hero"><h1>MONEYMAKER<span class="bang">!</span></h1><p>Five machines. Twenty days. Can you improve factory profitability?</p></section>
+
+<section class="scoregrid" aria-label="Scoreboard">
+  <div class="scorebox"><span class="scorelabel">DAY</span><strong id="dayCount">0 <small>/ 20</small></strong><div class="meter"><div id="dayMeter"></div></div></div>
+  <div class="scorebox"><span class="scorelabel">SHIPPED / TARGET</span><strong id="shippedCount">0 <small>/ 85</small></strong><div class="meter"><div id="shipMeter"></div></div></div>
+  <div class="scorebox"><span class="scorelabel">NET PROFIT</span><strong id="profitCount">$0</strong><div class="meter" aria-hidden="true" style="visibility:hidden"><div></div></div></div>
+</section>
+
+<section class="card" aria-labelledby="factoryTitle">
+  <div class="section-heading">
+    <div><div class="eyebrow">YOUR FACTORY</div><h2 id="factoryTitle">Watch the crates move</h2></div>
+    <div class="head-tools"><span id="plantLabel" class="plant-tag">Plant A</span><button type="button" class="pill" id="oeeButton" aria-pressed="false">Show OEE</button></div>
+  </div>
+  <div class="scene-wrap"><svg id="scene" role="group" aria-label="Production line: raw material, five stations, inventory between stations, shipping dock"></svg></div>
+  <p class="tap-hint">👆 Tap any machine to improve it</p>
+  <div class="legend" aria-hidden="true"><span><i style="background:#9aa9b5"></i>Raw material</span><span><i style="background:#efb662"></i>Work in process (waiting)</span><span><i style="background:#5fdca9"></i>Finished goods</span></div>
+  <div class="controls">
+    <button type="button" id="day1" class="primary">Advance 1 Day</button>
+    <button type="button" id="day7" class="secondary">Advance 7 Days</button>
+    <button type="button" id="improveButton" class="secondary">Improve Machine</button>
+  </div>
+  <p id="gameStatus" class="status" role="status" aria-live="polite"></p>
+  <div id="upgradePanel" class="panel" hidden></div>
+  <div id="oeePanel" class="panel oee-panel" hidden>
+    <p><strong>How OEE is measured here.</strong> Availability and Quality are assumed to be 100%, so OEE = Performance = <em>units the station actually made ÷ its theoretical average daily roll</em>. Days a station spent waiting for material count against it. A low OEE can mean the machine is <em>starved</em>, not broken. Lucky streaks can push OEE above 100%. This is a teaching simplification, not a standard OEE study. OEE is extra information. Your score is net profit.</p>
+  </div>
+</section>
+
+<section class="lower">
+  <div class="card small-card">
+    <div class="eyebrow">GAME FINANCES</div><h2>Where profit comes from</h2>
+    <div class="ledger">
+      <div><span>Throughput (<span id="tpUnits">0</span> shipped × <span id="tpRate">$400</span>)</span><strong id="contrib">$0</strong></div>
+      <div><span>Operating expense (<span id="opDay">0</span> days × <span id="oeRate">$1,000</span>)</span><strong id="expense">$0</strong></div>
+      <div><span>Improvement spending</span><strong id="invest">$0</strong></div>
+      <div class="ledger-total"><span>Net profit</span><strong id="ledgerProfit">$0</strong></div>
+    </div>
+    <details><summary>What is Throughput Accounting?</summary>
+      <p>Throughput Accounting judges decisions by their effect on the whole system. <strong>Throughput</strong> is the money a sale brings in. Here that is <span class="tpRate2">$400</span> per unit shipped. <strong>Operating Expense</strong> is the cost of running the factory each day, whether or not it ships much. <strong>Net profit = Throughput − Operating Expense − Investment.</strong></p>
+      <p>Customers will buy everything you ship, so the way to make more money is to <em>ship more</em>, not to cut people. An improvement pays off only if it raises what the whole factory ships, and that depends on the constraint.</p>
+    </details>
+  </div>
+  <div class="card small-card">
+    <div class="eyebrow">YOUR RECORDS · THIS BROWSER</div><h2>Can you do better?</h2>
+    <div class="record"><span>All-time best (day 20)</span><strong id="bestAll">—</strong></div>
+    <div class="record"><span id="monthLabel">Best this month</span><strong id="bestMonth">—</strong></div>
+    <div class="replay">
+      <button type="button" id="replayButton" class="secondary">Play Again</button>
+      <button type="button" id="differentButton" class="secondary">Different Plant</button>
+      <button type="button" id="resetButton" class="ghost">Same Rolls</button>
+      <button type="button" id="resultsButton" class="ghost" disabled>Day-20 results</button>
+    </div>
+    <p class="footnote"><strong>Play Again:</strong> same plant, new dice rolls. <strong>Different Plant:</strong> the same five machines in new positions. <strong>Same Rolls:</strong> restart this plant with the identical dice sequence to compare strategies. All improvements reset.</p>
+    <p class="note">Scores and your game in progress are saved only in this browser on this device. Clearing browser data, using a private window, or switching devices starts you over.</p>
+  </div>
+</section>
+
+<section class="card" style="margin-bottom:18px">
+  <div class="section-heading"><div><div class="eyebrow">LEARN FROM THE FACTORY</div><h2>Shipments over time</h2></div><span id="upgradeCount" class="footnote">0 improvements</span></div>
+  <div class="history-stats">
+    <div><small>Shipped, last 7 days</small><strong id="ship7">—</strong></div>
+    <div><small>Total WIP</small><strong id="totalWip">16</strong></div>
+    <div><small>Days played</small><strong id="allDays">0</strong></div>
+  </div>
+  <div class="bars" id="dailyBars" aria-label="Daily shipments chart"></div>
+  <p class="note">Bars show daily shipments. The dashed line is the average pace needed to hit the target in 20 days. A great day at one station is not a great day for the factory.</p>
+</section>
+</main>
+<footer>© <span id="year"></span> BufferLogic · Moneymaker is a learning simulation, not a forecasting tool.</footer>
+</div>
+
+<div id="howModal" class="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="howTitle">
+    <button type="button" class="modal-close" data-close aria-label="Close">✕</button>
+    <div class="eyebrow">HOW TO PLAY</div>
+    <h2 id="howTitle">Make more money, not just more parts.</h2>
+    <ul>
+      <li>Five machines work in a line. Each day, each one rolls hidden dice to decide how much it <em>could</em> make. It can only work on material that was waiting for it at the start of the day.</li>
+      <li>Press <strong>Advance 1 Day</strong> or <strong>Advance 7 Days</strong> and watch the crates. <strong>Watch where crates pile up.</strong></li>
+      <li>Tap a machine, then choose <strong>Raise Minimum</strong> (better bad days) or <strong>Raise Maximum</strong> (better good days). Each improvement costs <span class="costTxt">$1,000</span>.</li>
+      <li>Ship at least <span class="targetTxt">85</span> units and finish day 20 with as much net profit as you can. Customers will buy everything you ship.</li>
+      <li>You can keep playing after day 20, but only day 20 counts toward your record.</li>
+    </ul>
+    <button type="button" class="primary" data-close>Let's make some money →</button>
+  </div>
+</div>
+
+<div id="resultModal" class="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <button type="button" class="modal-close" data-close aria-label="Close">✕</button>
+    <div class="eyebrow">DAY 20 · RESULTS</div>
+    <div id="resultBody"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   Moneymaker v2 — A BufferLogic Learning Experience
+   ---------------------------------------------------------------------
+   v1.1 bug: the whole script lived in <head> with `defer`. Browsers ignore
+   `defer` on inline scripts, so it ran before the page body existed;
+   the first addEventListener on a missing element threw and nothing else
+   ran. This script sits at the end of <body>, so every element exists.
+   ===================================================================== */
+(() => {
+/* ---------- 1. Configuration (hidden machine dice live here) ---------- */
+const CONFIG = {
+  DAY_LIMIT: 20, TARGET: 85,
+  UNIT_THROUGHPUT: 400, DAILY_OE: 1000, IMPROVEMENT_COST: 1000,
+  INITIAL_WIP: [4,4,4,4],
+  // Flat (uniform) integer dice ranges. Drill is the built-in constraint.
+  MACHINES: [
+    {id:0, name:"Stamping press", lo:2, hi:10},
+    {id:1, name:"Lathe",          lo:3, hi:9},
+    {id:2, name:"Drill press",    lo:2, hi:6},
+    {id:3, name:"Heat-treat oven",lo:4, hi:8},
+    {id:4, name:"Packing robot",  lo:3, hi:10}
+  ],
+  PLANT_ORDERS: [[0,1,2,3,4],[3,0,4,2,1],[2,4,0,3,1],[4,2,1,0,3],[1,3,0,4,2]],
+  STORAGE_KEY: "moneymaker-v2-state", RECORDS_KEY: "moneymaker-v2-records"
+};
+const {DAY_LIMIT,TARGET,UNIT_THROUGHPUT,DAILY_OE,IMPROVEMENT_COST} = CONFIG;
+
+/* ---------- 2. Pure simulation (no DOM) ---------- */
+function pseudoRandom(seed,day,machineId){let x=(seed ^ Math.imul(day+1,0x9e3779b9) ^ Math.imul(machineId+11,0x85ebca6b))>>>0;x^=x>>>16;x=Math.imul(x,0x7feb352d);x^=x>>>15;x=Math.imul(x,0x846ca68b);x^=x>>>16;return (x>>>0)/4294967296}
+const randomSeed=()=>{try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]>>>0}catch{return Math.floor(Math.random()*4294967295)>>>0}};
+const avgOf=m=>(m.lo+m.hi)/2;
+const rollFor=(m,seed,day)=>m.lo+Math.floor(pseudoRandom(seed,day,m.id)*(m.hi-m.lo+1));
+
+function createGame(order=[0,1,2,3,4],seed=randomSeed(),plant=0){
+  return {version:2,order:order.slice(),seed,plant,day:0,wip:CONFIG.INITIAL_WIP.slice(),
+    machines:CONFIG.MACHINES.map(m=>({id:m.id,lo:m.lo,hi:m.hi})),
+    shipments:0,spending:0,upgrades:[],daily:[],finished:null};
+}
+/* One day. Fixed sequence: every station sees only the material that was
+   waiting at the START of the day, so nothing is processed twice in a day.
+   Raw material in front of station 1 is unlimited. */
+function stepDay(s){
+  const before=s.wip.slice();
+  const possible=s.order.map(id=>rollFor(s.machines[id],s.seed,s.day));
+  const available=s.order.map((_,i)=>i===0?Infinity:before[i-1]);
+  const output=possible.map((p,i)=>Math.min(p,available[i]));
+  const after=before.map((w,i)=>w+output[i]-output[i+1]);
+  s.wip=after; s.shipments+=output[4]; s.day++;
+  const rec={day:s.day,possible,output,shipped:output[4],wipBefore:before,wip:after.slice(),
+    avg:s.order.map(id=>avgOf(s.machines[id]))};
+  s.daily.push(rec);
+  return rec;
+}
+function applyImprovement(s,pos,kind){
+  const id=s.order[pos], m=s.machines[id];
+  if(kind==="min"){ if(m.lo>=m.hi-1) return {ok:false,reason:"consistent"}; m.lo++; }
+  else if(kind==="max"){ m.hi++; }
+  else return {ok:false,reason:"kind"};
+  s.spending+=IMPROVEMENT_COST;
+  s.upgrades.push({day:s.day,machine:id,position:pos,kind,cost:IMPROVEMENT_COST});
+  return {ok:true};
+}
+const profitOf=s=>s.shipments*UNIT_THROUGHPUT - s.day*DAILY_OE - s.spending;
+function oeeOf(s){ // per position: actual made / sum of theoretical daily averages
+  return s.order.map((_,i)=>{let made=0,avg=0;for(const d of s.daily){made+=d.output[i];avg+=d.avg[i]}return avg?made/avg:null});
+}
+function pileGap(s){ // inbound pile minus outbound pile, per station (station 1 inbound = raw, shown as null)
+  return s.order.map((_,i)=>i===0?null:(s.wip[i-1]-(i===4?0:s.wip[i])));
+}
+function baselineProfit(order,seed){ const b=createGame(order,seed); for(let d=0;d<DAY_LIMIT;d++)stepDay(b); return {profit:profitOf(b),shipments:b.shipments}; }
+const nextOrder=o=>{const L=CONFIG.PLANT_ORDERS;const i=L.findIndex(p=>p.every((v,j)=>v===o[j]));return L[(i+1)%L.length].slice()};
+function validSaved(x){return !!(x&&x.version===2&&Array.isArray(x.order)&&x.order.length===5&&new Set(x.order).size===5&&
+  Array.isArray(x.machines)&&x.machines.length===5&&x.machines.every((m,i)=>m.id===i&&Number.isInteger(m.lo)&&Number.isInteger(m.hi)&&m.lo>=0&&m.hi>m.lo)&&
+  Array.isArray(x.wip)&&x.wip.length===4&&x.wip.every(n=>Number.isInteger(n)&&n>=0)&&Number.isInteger(x.day)&&Array.isArray(x.daily)&&x.daily.length===x.day&&Number.isInteger(x.seed))}
+
+/* ---------- 3. Persistence ---------- */
+let state; try{const raw=JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY));state=validSaved(raw)?raw:createGame()}catch{state=createGame()}
+const save=()=>{try{localStorage.setItem(CONFIG.STORAGE_KEY,JSON.stringify(state))}catch{}};
+const readRecords=()=>{try{return JSON.parse(localStorage.getItem(CONFIG.RECORDS_KEY))||{all:null,months:{}}}catch{return {all:null,months:{}}}};
+const writeRecords=r=>{try{localStorage.setItem(CONFIG.RECORDS_KEY,JSON.stringify(r))}catch{}};
+const monthKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`};
+
+function recordGame(){
+  if(state.finished) return;
+  const r=readRecords(); if(!r.months) r.months={};
+  const profit=profitOf(state), prevAll=r.all?r.all.profit:null;
+  const metTarget=state.shipments>=TARGET, newBest=prevAll!==null&&profit>prevAll;
+  const base=baselineProfit(state.order,state.seed);
+  state.finished={profit,shipments:state.shipments,spending:state.spending,upgrades:state.upgrades.length,
+    metTarget,newBest,prevBest:prevAll,baseline:base,oee:oeeOf(state),gap:pileGap(state),wip:state.wip.slice(),
+    machines:state.machines.map(m=>({...m})),order:state.order.slice(),plant:state.plant,seen:false};
+  const entry={profit,shipments:state.shipments,date:new Date().toISOString()};
+  if(!r.all||profit>r.all.profit) r.all=entry;
+  const mk=monthKey(); if(!r.months[mk]||profit>r.months[mk].profit) r.months[mk]=entry;
+  writeRecords(r);
+}
+
+/* ---------- 4. Helpers ---------- */
+const $=id=>document.getElementById(id);
+const money=n=>(n<0?"−":"")+"$"+Math.abs(Math.round(n)).toLocaleString("en-US");
+const plantName=p=>{let n=p+1,s="";while(n>0){n--;s=String.fromCharCode(65+n%26)+s;n=Math.floor(n/26)}return s};
+const NS="http://www.w3.org/2000/svg";
+function S(tag,attrs={},parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+const reducedMotion=()=>window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- 5. Machine artwork: five distinct machines with named moving parts ----------
+   Each draws into a 120×100 box. Parts with mm-* classes move only while the
+   machine's <svg> has class "running" (set only when it actually produces). */
+const MACHINE_ART = {
+ 0:`<ellipse cx="60" cy="96" rx="50" ry="4" fill="#061321" opacity=".6"/>
+    <rect x="10" y="82" width="100" height="12" rx="3" fill="#3d6478" stroke="#9ec9cc" stroke-width="1.5"/>
+    <rect x="17" y="16" width="13" height="68" rx="2" fill="#2f6f8f" stroke="#9ec9cc" stroke-width="1.5"/>
+    <rect x="90" y="16" width="13" height="68" rx="2" fill="#2f6f8f" stroke="#9ec9cc" stroke-width="1.5"/>
+    <rect x="11" y="6" width="98" height="16" rx="4" fill="#2a5d79" stroke="#9ec9cc" stroke-width="1.5"/>
+    <circle cx="98" cy="14" r="3" class="mm-lamp" fill="#2c4a3c"/>
+    <g class="mm-ram"><rect x="56" y="20" width="8" height="12" fill="#a8c3cc"/><rect x="34" y="30" width="52" height="18" rx="2" fill="#d7e3e8" stroke="#6e8f9b"/><path d="M40 48h40" stroke="#6e8f9b" stroke-width="3"/></g>
+    <rect x="32" y="70" width="56" height="12" rx="2" fill="#5b7f8e" stroke="#9ec9cc"/>
+    <rect x="44" y="64" width="32" height="6" fill="#efb662"/>`,
+ 1:`<ellipse cx="60" cy="96" rx="50" ry="4" fill="#061321" opacity=".6"/>
+    <rect x="8" y="56" width="104" height="36" rx="4" fill="#4d417a" stroke="#c5b8f0" stroke-width="1.5"/>
+    <rect x="16" y="64" width="26" height="20" rx="2" fill="#2e2752"/><circle cx="22" cy="74" r="2.5" class="mm-lamp" fill="#2c4a3c"/>
+    <rect x="12" y="18" width="30" height="40" rx="3" fill="#5f529a" stroke="#c5b8f0" stroke-width="1.5"/>
+    <rect x="42" y="48" width="66" height="7" fill="#8d86b0"/>
+    <g class="mm-spin"><circle cx="54" cy="36" r="15" fill="#8f86c4" stroke="#e1dcfa" stroke-width="2"/><path d="M54 21v30M39 36h30M43.5 25.5l21 21M64.5 25.5l-21 21" stroke="#3e3570" stroke-width="3"/><circle cx="54" cy="36" r="4" fill="#efe9ff"/></g>
+    <rect x="69" y="32" width="26" height="8" fill="#efb662"/>
+    <rect x="94" y="24" width="14" height="25" rx="2" fill="#5f529a" stroke="#c5b8f0"/>
+    <g class="mm-tool"><path d="M82 48l6-8 6 8z" fill="#e8e3ff"/></g>`,
+ 2:`<ellipse cx="60" cy="96" rx="50" ry="4" fill="#061321" opacity=".6"/>
+    <rect x="12" y="84" width="96" height="10" rx="3" fill="#8a4a1e" stroke="#f2b98c" stroke-width="1.5"/>
+    <rect x="20" y="10" width="13" height="76" rx="2" fill="#b5652b" stroke="#f2b98c" stroke-width="1.5"/>
+    <rect x="26" y="10" width="66" height="26" rx="5" fill="#c97a3a" stroke="#f2b98c" stroke-width="1.5"/>
+    <circle cx="84" cy="18" r="3" class="mm-lamp" fill="#2c4a3c"/>
+    <rect x="40" y="66" width="52" height="8" rx="2" fill="#8a4a1e" stroke="#f2b98c"/>
+    <rect x="52" y="58" width="28" height="8" fill="#efb662"/>
+    <g class="mm-drill"><rect x="57" y="36" width="18" height="8" fill="#e6c3a3"/><path class="mm-bit" d="M66 44v14" stroke="#f3f3f3" stroke-width="5" stroke-dasharray="3 1"/><path d="M63.5 58l2.5 5 2.5-5z" fill="#f3f3f3"/></g>`,
+ 3:`<ellipse cx="60" cy="96" rx="50" ry="4" fill="#061321" opacity=".6"/>
+    <circle class="mm-smoke" cx="89" cy="4" r="4" fill="#9fb0bb"/><circle class="mm-smoke s2" cx="91" cy="6" r="3" fill="#9fb0bb"/>
+    <rect x="83" y="6" width="12" height="18" fill="#6e2e28" stroke="#e8a59c"/>
+    <rect x="10" y="20" width="100" height="70" rx="6" fill="#8a3b33" stroke="#e8a59c" stroke-width="1.5"/>
+    <rect x="22" y="32" width="58" height="40" rx="4" fill="#2a1312" stroke="#e8a59c"/>
+    <rect class="mm-glow" x="25" y="35" width="52" height="34" rx="3" fill="#ff8a3d"/>
+    <rect x="36" y="56" width="30" height="10" fill="#efb662"/>
+    <rect x="86" y="34" width="16" height="36" rx="2" fill="#5a2521"/>
+    <circle cx="94" cy="42" r="3" class="mm-lamp" fill="#2c4a3c"/><circle cx="94" cy="52" r="3" fill="#ffc46b"/><circle cx="94" cy="62" r="3" fill="#ff6b5b"/>`,
+ 4:`<ellipse cx="60" cy="96" rx="50" ry="4" fill="#061321" opacity=".6"/>
+    <rect x="12" y="84" width="96" height="10" rx="3" fill="#24593f" stroke="#a5e6c4" stroke-width="1.5"/>
+    <rect x="76" y="64" width="30" height="20" fill="#b88a55" stroke="#f0d2a6"/><path d="M76 70h30" stroke="#8a6234"/>
+    <rect x="42" y="74" width="36" height="12" rx="3" fill="#2f7d5b" stroke="#a5e6c4" stroke-width="1.5"/>
+    <circle cx="60" cy="70" r="8" fill="#3f9a72" stroke="#a5e6c4" stroke-width="1.5"/>
+    <g class="mm-arm"><rect x="56" y="22" width="8" height="48" rx="4" fill="#4fb487" stroke="#d2f5e3"/><circle cx="60" cy="24" r="6" fill="#3f9a72" stroke="#d2f5e3"/><path d="M60 24L88 18" stroke="#4fb487" stroke-width="7" stroke-linecap="round"/><path d="M88 14v10M92 14v10" stroke="#d2f5e3" stroke-width="3"/><rect x="85" y="24" width="10" height="8" fill="#efb662"/></g>
+    <circle cx="22" cy="78" r="3" class="mm-lamp" fill="#2c4a3c"/>`
+};
+
+/* ---------- 6. Layout (wide row vs. narrow U-shaped line for phones) ---------- */
+function makeLayout(narrow){
+  if(!narrow){
+    const W=1040,H=246, mw=120, mh=100, my=40, xs=[70,260,450,640,830];
+    const st=xs.map((x,i)=>({x,y:my,w:mw,h:mh,lx:x+mw/2,ly:30,numY:170,subY:186,statusY:202,oeeY:222,
+      inP:[x+6,my+82],outP:[x+114,my+82]}));
+    const buf=[0,1,2,3].map(i=>{const x0=xs[i]+mw+5,x1=xs[i+1]-5;return {x0,x1,top:58,bottom:130,lx:(x0+x1)/2,ly:50,fs:20,anchor:"middle",
+      route:[st[i].outP],belt:[[xs[i]+mw-2,130,xs[i+1]-(xs[i]+mw-2)+2,7]]}});
+    return {W,H,narrow:false,st,buf,
+      raw:{x:6,y:76,w:56,h:56,lx:34,ly:30,out:[56,118]},
+      dock:{x:962,y:62,w:72,h:70,lx:998,ly:30,numY:170,subY:188,in:[972,112]},
+      rawBelt:[56,130,20,7],dockBelt:[xs[4]+mw-2,130,20,7]};
+  }
+  const W=440,H=404, mw=96, mh=80;
+  const r1=24, r2=252;
+  const pos=[[34,r1],[178,r1],[322,r1],[322,r2],[178,r2]];
+  const st=pos.map(([x,y],i)=>{const row2=i>=3;return {x,y,w:mw,h:mh,lx:x+mw/2,ly:y-8,numY:y+mh+22,subY:y+mh+35,statusY:y+mh+48,oeeY:y+mh+61,
+    inP: i===3?[x+mw/2,y+4]:(row2?[x+mw-4,y+66]:[x+4,y+66]),
+    outP: row2?[x+4,y+66]:(i===2?[x+mw-2,y+66]:[x+mw-4,y+66])}});
+  const buf=[
+    {x0:133,x1:174,top:30,bottom:88,lx:153.5,ly:22,fs:16,anchor:"middle",route:[st[0].outP],belt:[[128,88,52,6]]},
+    {x0:277,x1:318,top:30,bottom:88,lx:297.5,ly:22,fs:16,anchor:"middle",route:[st[1].outP],belt:[[272,88,52,6]]},
+    {x0:330,x1:414,top:182,bottom:228,lx:316,ly:212,fs:18,anchor:"end",route:[st[2].outP,[429,90],[429,222]],belt:[[425,88,8,142],[328,228,105,6]]},
+    {x0:277,x1:318,top:262,bottom:316,lx:297.5,ly:254,fs:16,anchor:"middle",route:[st[3].outP],belt:[[272,316,52,6]]}
+  ];
+  return {W,H,narrow:true,st,buf,
+    raw:{x:2,y:40,w:30,h:48,lx:17,ly:16,out:[30,80]},
+    dock:{x:16,y:266,w:150,h:56,lx:91,ly:258,numY:r2+mh+30,subY:r2+mh+46,in:[160,306]},
+    rawBelt:[18,88,22,6],dockBelt:[150,316,32,6]};
+}
+
+/* ---------- 7. Scene: build once per layout, update per day ---------- */
+const CRATE_W=12,CRATE_H=10,STEP_X=13,STEP_Y=11;
+const scene={layout:null,svg:null,piles:[],pileShown:[0,0,0,0],stations:[],moving:[],animating:false,dockToday:null};
+const animLog=[]; // test hook: what the animation actually moved, per day
+
+function buildScene(){
+  const narrow=isNarrow();
+  const L=makeLayout(narrow); scene.layout=L; document.querySelector(".scene-wrap").classList.toggle("narrow",narrow);
+  const svg=$("scene"); svg.replaceChildren(); svg.setAttribute("viewBox",`0 0 ${L.W} ${L.H}`); scene.svg=svg;
+  const defs=S("defs",{},svg);
+  [["c-raw","#9aa9b5","#d7e0e6","#5d6d79"],["c-wip","#efb662","#f9d48f","#a86a34"],["c-done","#5fdca9","#b8f5dc","#2e8c66"]].forEach(([id,f,hl,dk])=>{
+    const g=S("g",{id},defs);S("rect",{x:0,y:0,width:CRATE_W,height:CRATE_H,rx:1.5,fill:f,stroke:hl,"stroke-width":.8},g);S("path",{d:`M0 ${CRATE_H-2}h${CRATE_W}M${CRATE_W/2} 0v${CRATE_H-2}`,stroke:dk,"stroke-width":1.2},g)});
+  // floor grid
+  for(let x=0;x<L.W;x+=52) S("line",{x1:x,y1:0,x2:x,y2:L.H,stroke:"#ffffff",opacity:.025},svg);
+  const belts=S("g",{class:"belts"},svg);
+  const belt=([x,y,w,h])=>{S("rect",{x,y,width:w,height:h,rx:2,class:"belt"},belts);
+    if(w>=h)S("line",{x1:x+2,y1:y+h/2,x2:x+w-2,y2:y+h/2,class:"belt-stripes"},belts);
+    else S("line",{x1:x+w/2,y1:y+2,x2:x+w/2,y2:y+h-2,class:"belt-stripes"},belts)};
+  belt(L.rawBelt); L.buf.forEach(b=>b.belt.forEach(belt)); belt(L.dockBelt);
+  // raw material bin
+  const raw=S("g",{"aria-hidden":"true"},svg);
+  S("text",{x:L.raw.lx,y:L.raw.ly,"text-anchor":"middle",class:"st-label"},raw).textContent="RAW";
+  S("rect",{x:L.raw.x,y:L.raw.y,width:L.raw.w,height:L.raw.h,rx:4,fill:"#1c3142",stroke:"#5d7c8c"},raw);
+  const rc=Math.max(1,Math.floor((L.raw.w-4)/STEP_X)); const rr=Math.floor((L.raw.h-4)/STEP_Y);
+  for(let k=0;k<rc*rr;k++)S("use",{href:"#c-raw",x:L.raw.x+2+(k%rc)*STEP_X+(L.raw.w-4-rc*STEP_X)/2,y:L.raw.y+L.raw.h-2-(Math.floor(k/rc)+1)*STEP_Y},raw);
+  S("text",{x:L.raw.lx,y:L.raw.y-4,"text-anchor":"middle",class:"wip-lbl"},raw).textContent="∞";
+  // dock / truck
+  const dock=S("g",{"aria-hidden":"true"},svg), d=L.dock;
+  S("text",{x:d.lx,y:d.ly,"text-anchor":"middle",class:"st-label"},dock).textContent="SHIPPED";
+  const truck=S("g",{class:"truck"},dock); scene.truck=truck;
+  S("rect",{x:d.x+d.w*0.06,y:d.y,width:d.w*0.62,height:d.h-16,rx:3,fill:"#dfe9ee",stroke:"#9ec9cc"},truck);
+  S("rect",{x:d.x+d.w*0.68,y:d.y+(d.h-16)*0.35,width:d.w*0.28,height:(d.h-16)*0.65,rx:3,fill:"#52dbae",stroke:"#bff5df"},truck);
+  S("rect",{x:d.x+d.w*0.74,y:d.y+(d.h-16)*0.42,width:d.w*0.16,height:(d.h-16)*0.22,fill:"#123"},truck);
+  [0.2,0.5,0.82].forEach(f=>S("circle",{cx:d.x+d.w*f,cy:d.y+d.h-12,r:6,fill:"#14212c",stroke:"#7897a5","stroke-width":2},truck));
+  S("text",{x:d.x+d.w*0.37,y:d.y+(d.h-16)/2+4,"text-anchor":"middle","font-size":10,"font-weight":900,fill:"#1b3a4c"},truck).textContent="$";
+  scene.dockNum=S("text",{x:d.lx,y:d.numY,"text-anchor":"middle",class:"dock-num"},dock);
+  scene.dockSub=S("text",{x:d.lx,y:d.subY,"text-anchor":"middle",class:"st-sub"},dock);
+  // buffers (piles)
+  scene.piles=L.buf.map((b,i)=>{
+    const g=S("g",{},svg);
+    const cols=Math.max(1,Math.floor((b.x1-b.x0)/STEP_X)), rows=Math.max(1,Math.floor((b.bottom-b.top)/STEP_Y));
+    const crates=S("g",{},g);
+    const num=S("text",{x:b.lx,y:b.ly,"text-anchor":b.anchor,class:"wip-num","font-size":b.fs},g);
+    const lbl=S("text",{x:b.lx,y:b.ly+(b.anchor==="end"?13:-b.fs+2),"text-anchor":b.anchor,class:"wip-lbl"},g); lbl.textContent="WIP";
+    const over=S("text",{x:b.x1,y:b.top-1,"text-anchor":"end",class:"overflow"},g);
+    return {b,g,cols,rows,cap:cols*rows,crates,num,over,count:0};
+  });
+  // stations
+  scene.stations=L.st.map((p,i)=>{
+    const g=S("g",{class:"station",tabindex:0,role:"button"},svg);
+    const pad=6;
+    S("rect",{x:p.x-pad,y:p.ly-12,width:p.w+pad*2,height:p.oeeY-(p.ly-12)+6,rx:10,class:"st-hit"},g);
+    S("rect",{x:p.x-2,y:p.y-2,width:p.w+4,height:p.h+4,rx:9,class:"st-frame"},g);
+    const label=S("text",{x:p.lx,y:p.ly,"text-anchor":"middle",class:"st-label"},g); label.textContent=`STATION ${i+1}`;
+    const msvg=S("svg",{x:p.x,y:p.y,width:p.w,height:p.h,viewBox:"0 0 120 100",class:"machine"},g);
+    const num=S("text",{x:p.lx,y:p.numY,"text-anchor":"middle",class:"st-num","font-size":L.narrow?22:28},g);
+    const sub=S("text",{x:p.lx,y:p.subY,"text-anchor":"middle",class:"st-sub"},g);
+    const status=S("text",{x:p.lx,y:p.statusY,"text-anchor":"middle",class:"st-status"},g);
+    const oee=S("text",{x:p.lx,y:p.oeeY,"text-anchor":"middle",class:"st-oee"},g);
+    const select=()=>selectStation(i);
+    g.addEventListener("click",select);
+    g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select()}});
+    return {g,msvg,num,sub,status,oee,p,machineId:null};
+  });
+  scene.money=S("g",{},svg);
+  scene.flyLayer=S("g",{"pointer-events":"none"},svg);
+  refreshScene();
+}
+
+function slotXY(pile,k){const b=pile.b;const c=Math.min(k,pile.cap-1);const col=c%pile.cols,row=Math.floor(c/pile.cols);
+  const offset=(b.x1-b.x0-pile.cols*STEP_X)/2;return [b.x0+offset+col*STEP_X,b.bottom-(row+1)*STEP_Y]}
+function drawPile(i,count){
+  const pile=scene.piles[i]; pile.count=count;
+  const shown=Math.min(count,pile.cap); const kids=pile.crates.childNodes;
+  while(kids.length>shown) pile.crates.lastChild.remove();
+  for(let k=kids.length;k<shown;k++){const [x,y]=slotXY(pile,k);S("use",{href:"#c-wip",x,y},pile.crates)}
+  pile.num.textContent=count;
+  pile.num.setAttribute("class","wip-num"+(count>=20?" vhigh":count>=12?" high":""));
+  pile.over.textContent=count>pile.cap?`+${count-pile.cap}`:"";
+}
+function refreshScene(){
+  if(!scene.layout) return;
+  const last=state.daily.at(-1), oee=oeeOf(state), showOEE=uiState.showOEE;
+  state.wip.forEach((w,i)=>drawPile(i,w));
+  scene.stations.forEach((s,i)=>{
+    const id=state.order[i];
+    if(s.machineId!==id){s.msvg.innerHTML=MACHINE_ART[id];s.msvg.setAttribute("data-machine",id);s.machineId=id}
+    s.g.classList.toggle("selected",uiState.selected===i);
+    s.g.setAttribute("aria-pressed",uiState.selected===i?"true":"false");
+    if(last){
+      const out=last.output[i], short=out<last.possible[i];
+      s.num.textContent=out; s.sub.textContent="made today";
+      s.status.textContent= out===0?"Idle: no material": short?"Starved: ran out":"Ran at full roll";
+      s.status.setAttribute("class","st-status"+(out===0?" idle":short?" starved":""));
+      s.g.classList.toggle("idle",out===0);
+    }else{s.num.textContent="—";s.sub.textContent="made today";s.status.textContent="Ready";s.status.setAttribute("class","st-status");s.g.classList.remove("idle")}
+    s.oee.textContent=showOEE?(oee[i]==null?"OEE —":`OEE ${Math.round(oee[i]*100)}%`):"";
+    const name=CONFIG.MACHINES[id].name;
+    s.g.setAttribute("aria-label",`Station ${i+1}, ${name}. ${last?`Made ${last.output[i]} today.`:"Not yet run."}${i<4?` ${state.wip[i]} units waiting after it.`:""} Select to improve.`);
+  });
+  scene.dockNum.textContent=state.shipments;
+  scene.dockSub.textContent=last?`+${last.shipped} today`:"units";
+}
+
+/* ---------- 8. Animation engine: every moving crate comes from the day record ---------- */
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+function polyAt(pts,t){ // position along polyline at fraction t
+  if(pts.length===1)return pts[0];
+  const seg=[];let total=0;for(let k=1;k<pts.length;k++){const dx=pts[k][0]-pts[k-1][0],dy=pts[k][1]-pts[k-1][1];const l=Math.hypot(dx,dy);seg.push(l);total+=l}
+  let d=t*total;for(let k=0;k<seg.length;k++){if(d<=seg[k]||k===seg.length-1){const f=seg[k]?Math.min(1,d/seg[k]):1;return [pts[k][0]+(pts[k+1][0]-pts[k][0])*f,pts[k][1]+(pts[k+1][1]-pts[k][1])*f]}d-=seg[k]}
+  return pts.at(-1);
+}
+function fly(kind,pts,start,dur,arc,onArrive){
+  const el=S("use",{href:"#c-"+kind,x:0,y:0},scene.flyLayer);
+  const [x0,y0]=pts[0]; el.setAttribute("transform",`translate(${x0-CRATE_W/2},${y0-CRATE_H/2})`); el.style.opacity=0;
+  scene.moving.push({el,pts,start,dur,arc,onArrive,done:false});
+  return el;
+}
+let rafId=null;
+function tick(now){
+  let active=false;
+  for(const m of scene.moving){
+    if(m.done) continue; active=true;
+    const t=(now-m.start)/m.dur; if(t<0) continue;
+    m.el.style.opacity=1;
+    const e=ease(Math.min(1,t)); const [x,y]=polyAt(m.pts,e);
+    const lift=m.arc?Math.sin(Math.PI*e)*m.arc:0;
+    m.el.setAttribute("transform",`translate(${x-CRATE_W/2},${y-CRATE_H/2-lift})`);
+    if(t>=1){m.done=true;m.el.remove();m.onArrive&&m.onArrive()}
+  }
+  scene.moving=scene.moving.filter(m=>!m.done);
+  rafId=active?requestAnimationFrame(tick):null;
+}
+const startTicker=()=>{if(!rafId)rafId=requestAnimationFrame(tick)};
+function floatMoney(amount,at){
+  if(!amount)return; const [x,y]=at;
+  const t=S("text",{x,y:y-30,"text-anchor":"middle",class:"money-float"},scene.money); t.textContent="+"+money(amount);
+  t.animate([{transform:"translateY(0)",opacity:1},{transform:"translateY(-22px)",opacity:0}],{duration:1100,easing:"ease-out"}).onfinish=()=>t.remove();
+}
+
+/* Animate one simulated day from its record. Phase A: each station pulls
+   output[i] crates from the pile in front of it (raw bin for station 1).
+   Phase B: machines that produced run. Phase C: output[i] crates ride the
+   conveyor to the next pile (or the truck). Pile counts end exactly at rec.wip. */
+function playDay(rec,dur){
+  const L=scene.layout; const out=rec.output, before=rec.wipBefore;
+  const log={day:rec.day,pulled:[0,0,0,0,0],pushed:[0,0,0,0,0],shipped:0,runningStations:[],pileEnd:null};
+  animLog.push(log);
+  if(dur<=0||!L){refreshScene();log.pileEnd=scene.piles.map(p=>p.count);out.forEach((o,i)=>{log.pulled[i]=o;log.pushed[i]=o});log.shipped=out[4];return Promise.resolve()}
+  return new Promise(resolve=>{
+    const t0=performance.now();
+    const pA=dur*0.32, pB=dur*0.30, pC=dur*0.38; // phase lengths
+    svgRoot().style.setProperty("--cyc",Math.max(.18,Math.min(.5,pB/1000/1.2))+"s");
+    // Phase A: pull material
+    out.forEach((n,i)=>{
+      const target=scene.stations[i].p.inP;
+      if(i===0){for(let k=0;k<n;k++){fly("raw",[L.raw.out,target],t0+k*(pA*0.35/Math.max(1,n)),pA*0.65,8,()=>{log.pulled[0]++})}return}
+      const pile=scene.piles[i-1];
+      const startCount=before[i-1];
+      for(let k=0;k<n;k++){const slot=startCount-1-k;const [sx,sy]=slotXY(pile,slot);
+        fly("wip",[[sx+CRATE_W/2,sy+CRATE_H/2],target],t0+k*(pA*0.35/Math.max(1,n)),pA*0.65,14,()=>{log.pulled[i]++})}
+      drawPile(i-1,startCount-n); // material leaves the pile now
+    });
+    $("scene").classList.add("running-belts");
+    // Phase B: run machines that produced
+    setTimeout(()=>{scene.stations.forEach((s,i)=>{if(out[i]>0){s.msvg.classList.add("running");log.runningStations.push(i)}})},pA*0.55);
+    // Phase C: push output downstream
+    const cStart=t0+pA+pB;
+    out.forEach((n,i)=>{
+      const from=scene.stations[i].p.outP;
+      if(i===4){for(let k=0;k<n;k++){fly("done",[from,L.dock.in],cStart+k*(pC*0.35/Math.max(1,n)),pC*0.6,6,()=>{log.pushed[4]++;log.shipped++;
+          scene.dockNum.textContent=(+scene.dockNum.textContent||0)+1})}return}
+      const pile=scene.piles[i]; const base=before[i]-out[i+1];
+      for(let k=0;k<n;k++){const [sx,sy]=slotXY(pile,base+k);
+        fly("wip",[...pile.b.route,[sx+CRATE_W/2,sy+CRATE_H/2]],cStart+k*(pC*0.35/Math.max(1,n)),pC*0.6,0,()=>{log.pushed[i]++;drawPile(i,pile.count+1)})}
+    });
+    setTimeout(()=>{scene.stations.forEach(s=>s.msvg.classList.remove("running"))},pA+pB+pC*0.55);
+    setTimeout(()=>floatMoney(rec.shipped*UNIT_THROUGHPUT,L.dock.in),pA+pB+pC*0.7);
+    startTicker();
+    setTimeout(()=>{
+      $("scene").classList.remove("running-belts");
+      log.pileEnd=scene.piles.map(p=>p.count);
+      refreshScene(); resolve();
+    },dur+40);
+  });
+}
+const svgRoot=()=>$("scene");
+function isNarrow(){const w=document.querySelector(".scene-wrap").clientWidth||window.innerWidth;return w<760}
+
+/* ---------- 9. UI state & rendering ---------- */
+const uiState={selected:null,picking:false,showOEE:false,busy:false};
+let message="";
+function setMessage(m){message=m;$("gameStatus").textContent=m}
+
+function renderNumbers(){
+  const r=readRecords(),mk=monthKey(),p=profitOf(state);
+  $("dayCount").innerHTML=`${state.day} <small>/ ${DAY_LIMIT}</small>`;
+  $("shippedCount").innerHTML=`${state.shipments} <small>/ ${TARGET}</small>`;
+  const pc=$("profitCount"); pc.textContent=money(p); pc.classList.toggle("neg",p<0);
+  $("dayMeter").style.width=`${Math.min(100,state.day/DAY_LIMIT*100)}%`;
+  $("shipMeter").style.width=`${Math.min(100,state.shipments/TARGET*100)}%`;
+  $("plantLabel").textContent=`Plant ${plantName(state.plant)}`;
+  $("tpUnits").textContent=state.shipments; $("contrib").textContent=money(state.shipments*UNIT_THROUGHPUT);
+  $("opDay").textContent=state.day; $("expense").textContent="−"+money(state.day*DAILY_OE);
+  $("invest").textContent=state.spending?"−"+money(state.spending):"$0"; $("ledgerProfit").textContent=money(p);
+  $("bestAll").textContent=r.all?money(r.all.profit):"—";
+  $("bestMonth").textContent=r.months&&r.months[mk]?money(r.months[mk].profit):"—";
+  $("monthLabel").textContent=`Best in ${new Date().toLocaleString("en-US",{month:"long"})}`;
+  $("upgradeCount").textContent=`${state.upgrades.length} improvement${state.upgrades.length===1?"":"s"}`;
+  $("ship7").textContent=state.daily.length?state.daily.slice(-7).reduce((s,d)=>s+d.shipped,0):"—";
+  $("totalWip").textContent=state.wip.reduce((a,b)=>a+b,0);
+  $("allDays").textContent=state.day;
+  const after=state.day>=DAY_LIMIT;
+  $("day1").textContent=after?"Advance 1 More Day":"Advance 1 Day";
+  $("day7").textContent=after?"Advance 7 More Days":(DAY_LIMIT-state.day<7&&state.day<DAY_LIMIT?`Advance ${DAY_LIMIT-state.day} Days`:"Advance 7 Days");
+  $("resultsButton").disabled=!state.finished;
+  ["day1","day7","improveButton","replayButton","differentButton","resetButton"].forEach(id=>$(id).disabled=uiState.busy);
+  if(!uiState.busy) $("resultsButton").disabled=!state.finished;
+  renderBars(); renderUpgradePanel();
+}
+function renderBars(){
+  const bars=$("dailyBars"); bars.replaceChildren();
+  if(!state.daily.length){const n=document.createElement("div");n.className="bars-empty";n.textContent="Advance a day to see shipments over time.";bars.append(n);return}
+  const recent=state.daily.slice(-20), max=Math.max(10,...recent.map(r=>r.shipped));
+  const line=document.createElement("div");line.className="goal-line";line.style.bottom=`${(16+114*TARGET/DAY_LIMIT/max).toFixed(1)}px`;bars.append(line);
+  recent.forEach(r=>{const b=document.createElement("div");b.className="daybar";b.style.height=`${Math.max(2,r.shipped/max*100)}%`;b.title=`Day ${r.day}: ${r.shipped} shipped`;b.setAttribute("aria-label",b.title);const t=document.createElement("span");t.textContent=r.day;b.append(t);bars.append(b)});
+}
+function renderUpgradePanel(){
+  const panel=$("upgradePanel");
+  if(uiState.selected===null&&!uiState.picking){panel.hidden=true;panel.replaceChildren();return}
+  panel.hidden=false; panel.replaceChildren();
+  const closeBtn=()=>{const x=document.createElement("button");x.type="button";x.className="text-button";x.textContent="Close ×";x.addEventListener("click",()=>selectStation(null));return x};
+  if(uiState.selected===null){ // Step 1: choose a station
+    const head=document.createElement("div");head.className="panel-head";
+    const t=document.createElement("div");t.className="panel-title";t.textContent="Step 1 of 2 · Which station do you want to improve?";
+    head.append(t,closeBtn());
+    const grid=document.createElement("div");grid.className="station-picks";
+    state.order.forEach((id,i)=>{const b=document.createElement("button");b.type="button";b.className="station-pick";b.dataset.pos=i;b.disabled=uiState.busy;
+      const s=document.createElement("strong");s.textContent=`Station ${i+1}`;const sp=document.createElement("span");sp.textContent=CONFIG.MACHINES[id].name;b.append(s,sp);
+      b.addEventListener("click",()=>selectStation(i));grid.append(b)});
+    const p=document.createElement("p");p.textContent="Shortcut: you can also tap any machine in the factory.";
+    panel.append(head,grid,p);return;
+  }
+  const pos=uiState.selected, id=state.order[pos], m=state.machines[id], canMin=m.lo<m.hi-1;
+  const done=state.upgrades.filter(u=>u.machine===id).length;
+  const head=document.createElement("div");head.className="panel-head";
+  const t=document.createElement("div");t.className="panel-title";t.textContent=`Step 2 of 2 · Station ${pos+1} (${CONFIG.MACHINES[id].name}): choose an improvement`;
+  const back=document.createElement("button");back.type="button";back.className="text-button";back.textContent="← Other station";back.addEventListener("click",()=>{uiState.picking=true;selectStation(null,true)});
+  const tools=document.createElement("div");tools.append(back,closeBtn());
+  head.append(t,tools);
+  const ch=document.createElement("div");ch.className="choices";
+  const mk=(cls,title,desc,dis,kind)=>{const b=document.createElement("button");b.type="button";b.className="choice "+cls;b.disabled=dis||uiState.busy;b.dataset.kind=kind;
+    const s=document.createElement("strong");s.textContent=title;const sp=document.createElement("span");sp.textContent=desc;b.append(s,sp);b.addEventListener("click",()=>doImprove(kind));return b};
+  ch.append(mk("","↑ Raise Minimum",canMin?`Better bad days: +1 to the worst possible roll · ${money(IMPROVEMENT_COST)}`:"Unavailable: this station is already highly consistent (its worst day is one unit below its best). Raise Maximum is still available.",!canMin,"min"),
+            mk("upper","↑ Raise Maximum",`Better good days: +1 to the best possible roll · ${money(IMPROVEMENT_COST)}`,false,"max"));
+  const p=document.createElement("p");p.textContent=`Improvements already made here: ${done}. Takes effect from the next day you advance. Does this station limit what the factory ships?`;
+  panel.append(head,ch,p);
+}
+function selectStation(i,keepPicking=false){
+  uiState.selected=i; if(!keepPicking) uiState.picking=false; refreshScene(); renderUpgradePanel();
+  if(i!==null&&window.innerWidth<700) $("upgradePanel").scrollIntoView({behavior:reducedMotion()?"auto":"smooth",block:"nearest"});
+}
+function doImprove(kind){
+  if(uiState.busy||uiState.selected===null) return;
+  const pos=uiState.selected, res=applyImprovement(state,pos,kind);
+  if(!res.ok){setMessage(`Station ${pos+1} is already highly consistent, so Raise Minimum is unavailable. Raise Maximum is still available.`);renderUpgradePanel();return}
+  setMessage(`Station ${pos+1}: ${kind==="min"?"minimum":"maximum"} raised for ${money(IMPROVEMENT_COST)}. Advance and watch whether shipments, and profit, respond.${state.day>=DAY_LIMIT?" (Free play: your day-20 record is locked.)":""}`);
+  save(); renderNumbers(); refreshScene();
+}
+
+/* ---------- 10. Advancing time ---------- */
+async function advance(n){
+  if(uiState.busy) return;
+  if(state.day<DAY_LIMIT) n=Math.min(n,DAY_LIMIT-state.day);
+  uiState.busy=true; renderNumbers();
+  const dur=reducedMotion()?0:(n===1?1500:620);
+  let hit20=false;
+  for(let k=0;k<n;k++){
+    const rec=stepDay(state);
+    if(state.day===DAY_LIMIT){recordGame();hit20=true}
+    save();
+    await playDay(rec,dur);
+    renderNumbers(); refreshScene();
+    const starved=rec.output.map((o,i)=>o<rec.possible[i]?i+1:null).filter(Boolean);
+    setMessage(`Day ${rec.day}: shipped ${rec.shipped} unit${rec.shipped===1?"":"s"} (+${money(rec.shipped*UNIT_THROUGHPUT)}).`+
+      (starved.length?` Waiting for material: Station${starved.length>1?"s":""} ${starved.join(", ")}.`:" Every station made its full roll.")+
+      (state.day<DAY_LIMIT?` ${DAY_LIMIT-state.day} days left.`:state.day===DAY_LIMIT?"":" Free play.")+
+      (k<n-1?` (Day ${k+1} of ${n})`:""));
+  }
+  uiState.busy=false; renderNumbers();
+  if(hit20){ setMessage(`Day 20 complete: ${state.shipments} shipped, net profit ${money(state.finished.profit)}. Your record is saved. Keep experimenting or start a new game.`); showResults(); }
+}
+
+/* ---------- 11. Day-20 results, recognition and reveal ---------- */
+function showResults(){
+  const f=state.finished; if(!f) return;
+  f.seen=true; save();
+  const body=$("resultBody"); body.replaceChildren();
+  const h=document.createElement("div");
+  const recog=f.metTarget||f.newBest;
+  const delta=f.profit-f.baseline.profit;
+  h.innerHTML=(recog?`<div class="banner"><strong>You're a Moneymaker!</strong><span>${[f.metTarget?`You hit the ${TARGET}-unit target`:null,f.newBest?`New personal best (previous ${money(f.prevBest)})`:null].filter(Boolean).join(" · ")}</span></div>`:"")+
+   `<h2 id="resultTitle">${recog?"Profit delivered.":"Day 20 complete."}</h2>
+   <div class="result-grid"><div><small>Net profit</small><strong>${money(f.profit)}</strong></div><div><small>Shipped / target</small><strong>${f.shipments} / ${TARGET}</strong></div><div><small>Improvements</small><strong>${f.upgrades} (${money(f.spending)})</strong></div></div>
+   <p>With <strong>no improvements</strong>, these exact dice rolls would have earned <strong>${money(f.baseline.profit)}</strong> (${f.baseline.shipments} shipped). Your decisions ${delta>=0?"added":"cost"} <strong>${money(Math.abs(delta))}</strong>.</p>
+   ${!f.metTarget?`<p>Missed the target? Look for the station with a big pile of crates in front of it and a small pile after it.</p>`:""}`;
+  body.append(h);
+  const revealBtn=document.createElement("button");revealBtn.type="button";revealBtn.className="secondary";revealBtn.style.width="100%";revealBtn.textContent="Reveal the machines";
+  const reveal=document.createElement("div");reveal.hidden=true;
+  revealBtn.addEventListener("click",()=>{reveal.hidden=!reveal.hidden;revealBtn.textContent=reveal.hidden?"Reveal the machines":"Hide the machines"});
+  reveal.append(buildReveal(f)); body.append(revealBtn,reveal);
+  const act=document.createElement("div");act.className="modal-actions";
+  const b=(t,c,fn)=>{const x=document.createElement("button");x.type="button";x.className=c;x.textContent=t;x.addEventListener("click",fn);return x};
+  act.append(b("Play Again","primary",()=>{closeModal("resultModal");startOver("replay")}),b("Different Plant","secondary",()=>{closeModal("resultModal");startOver("different")}),
+             b("Same Rolls","secondary",()=>{closeModal("resultModal");startOver("same")}),b("Keep experimenting","ghost",()=>closeModal("resultModal")));
+  body.append(act);
+  openModal("resultModal");
+}
+function buildReveal(f){
+  const wrap=document.createElement("div");
+  const avgs=f.order.map(id=>avgOf(f.machines[id])); const minAvg=Math.min(...avgs);
+  const gaps=f.gap; const maxGap=Math.max(...gaps.filter(g=>g!==null));
+  const t=document.createElement("table");t.className="reveal-table";
+  t.innerHTML=`<thead><tr><th>Station</th><th>Machine</th><th>Hidden dice</th><th>Avg roll</th><th>OEE</th><th>Pile in − out</th></tr></thead>`;
+  const tb=document.createElement("tbody");
+  f.order.forEach((id,i)=>{const m=f.machines[id],orig=CONFIG.MACHINES[id];const tr=document.createElement("tr");if(avgs[i]===minAvg)tr.className="constraint";
+    const changed=m.lo!==orig.lo||m.hi!==orig.hi;
+    tr.innerHTML=`<td>${i+1}${avgs[i]===minAvg?'<span class="tag">CONSTRAINT</span>':""}</td><td>${orig.name}</td><td>${m.lo}–${m.hi}${changed?` <span class="footnote">(was ${orig.lo}–${orig.hi})</span>`:""}</td><td>${avgs[i]}</td><td>${f.oee[i]==null?"—":Math.round(f.oee[i]*100)+"%"}</td><td>${gaps[i]===null?"raw ∞":(gaps[i]>0?"+":"")+gaps[i]}${gaps[i]!==null&&gaps[i]===maxGap&&maxGap>0?" ◀":""}</td>`;
+    tb.append(tr)});
+  t.append(tb); wrap.append(t);
+  const p=document.createElement("div");
+  p.innerHTML=`<p><strong>Find the constraint:</strong> it is the station with the lowest average roll. On the factory floor it shows as the <strong>biggest pile in front and smallest pile after</strong> (the largest "pile in − out", marked ◀). Every unit the constraint gains is a unit the whole factory ships. A unit gained anywhere else mostly becomes more waiting inventory.</p>
+   <p><strong>Read the OEE carefully:</strong> the constraint runs near 100% because it almost never waits. Stations after it look "inefficient" because they are starved, not broken. Fixing them spends money and ships nothing extra. Station 1 never runs out of raw material, so it always looks busy, but its extra output only piles up as inventory. A high OEE away from the constraint is not profit.</p>`;
+  wrap.append(p); return wrap;
+}
+
+/* ---------- 12. Replays ---------- */
+function startOver(mode){
+  if(uiState.busy) return;
+  if(mode==="replay") state=createGame(state.order,randomSeed(),state.plant);
+  else if(mode==="same") state=createGame(state.order,state.seed,state.plant);
+  else if(mode==="different") state=createGame(nextOrder(state.order),randomSeed(),state.plant+1);
+  uiState.selected=null;
+  setMessage(mode==="different"?`Welcome to Plant ${plantName(state.plant)}. The same five machines, in new positions. Where is the constraint now?`:
+    mode==="same"?"Same plant, same dice sequence. Try a different strategy and compare.":"New game, new dice rolls. Advance a day and watch where crates pile up.");
+  save(); refreshScene(); renderNumbers(); window.scrollTo({top:0,behavior:reducedMotion()?"auto":"smooth"});
+}
+
+/* ---------- 13. Modals & wiring ---------- */
+let lastFocus=null;
+function openModal(id){lastFocus=document.activeElement;$(id).hidden=false;document.body.style.overflow="hidden";const c=$(id).querySelector("[data-close]");c&&c.focus()}
+function closeModal(id){$(id).hidden=true;document.body.style.overflow="";lastFocus&&lastFocus.focus&&lastFocus.focus()}
+document.querySelectorAll(".modal-backdrop").forEach(b=>{b.addEventListener("click",e=>{if(e.target===b||e.target.closest("[data-close]"))closeModal(b.id)})});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".modal-backdrop:not([hidden])").forEach(b=>closeModal(b.id))});
+$("howButton").addEventListener("click",()=>openModal("howModal"));
+$("day1").addEventListener("click",()=>advance(1));
+$("day7").addEventListener("click",()=>advance(7));
+$("improveButton").addEventListener("click",()=>{
+  if(uiState.selected===null) uiState.picking=true;
+  renderUpgradePanel();
+  const s=$("scene");s.classList.remove("pick-me");void s.getBoundingClientRect();s.classList.add("pick-me");
+  setTimeout(()=>s.classList.remove("pick-me"),3200);
+  $("upgradePanel").scrollIntoView({behavior:reducedMotion()?"auto":"smooth",block:"nearest"});
+});
+$("oeeButton").addEventListener("click",()=>{uiState.showOEE=!uiState.showOEE;$("oeeButton").setAttribute("aria-pressed",String(uiState.showOEE));$("oeeButton").textContent=uiState.showOEE?"Hide OEE":"Show OEE";$("oeePanel").hidden=!uiState.showOEE;refreshScene()});
+$("replayButton").addEventListener("click",()=>startOver("replay"));
+$("differentButton").addEventListener("click",()=>startOver("different"));
+$("resetButton").addEventListener("click",()=>startOver("same"));
+$("resultsButton").addEventListener("click",showResults);
+$("year").textContent=new Date().getFullYear();
+document.querySelectorAll(".costTxt").forEach(e=>e.textContent=money(IMPROVEMENT_COST));
+document.querySelectorAll(".targetTxt").forEach(e=>e.textContent=TARGET);
+document.querySelectorAll(".tpRate2").forEach(e=>e.textContent=money(UNIT_THROUGHPUT));
+$("tpRate").textContent=money(UNIT_THROUGHPUT); $("oeRate").textContent=money(DAILY_OE);
+let lastNarrow=null;
+window.addEventListener("resize",()=>{const n=isNarrow();if(n!==lastNarrow&&!uiState.busy){lastNarrow=n;buildScene()}});
+
+lastNarrow=isNarrow(); buildScene(); renderNumbers();
+setMessage(!state.day?"Press Advance 1 Day and watch the crates move. Where do they pile up?":
+  state.day>=DAY_LIMIT?`Your day-20 score is ${money(state.finished?state.finished.profit:profitOf(state))}. Keep experimenting or start a new game.`:`Game restored at day ${state.day}.`);
+
+/* Test hook (pure rules + read-only views); not used by the interface. */
+window.__moneymaker={CONFIG,createGame,stepDay,applyImprovement,profitOf,oeeOf,pileGap,baselineProfit,nextOrder,pseudoRandom,rollFor,
+  getState:()=>state,animLog,isBusy:()=>uiState.busy,scene};
+})();
+</script>
+</body>
+</html>
