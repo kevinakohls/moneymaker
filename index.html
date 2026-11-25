@@ -664,7 +664,12 @@ function playDay(rec,dur){
     setTimeout(()=>floatMoney(rec.shipped*UNIT_THROUGHPUT,L.dock.in),pA+pB+pC*0.7);
     startTicker();
     setTimeout(()=>{
+      // Background tabs pause animation frames: land any crate still in flight
+      // so the picture always ends exactly at the simulated state.
+      for(const m of scene.moving){if(!m.done){m.done=true;m.el.remove();m.onArrive&&m.onArrive()}}
+      scene.moving=[];
       $("scene").classList.remove("running-belts");
+      scene.stations.forEach(s=>s.msvg.classList.remove("running"));
       log.pileEnd=scene.piles.map(p=>p.count);
       refreshScene(); resolve();
     },dur+40);
