@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0c1420">
-<meta name="description" content="Moneymaker: five machines, three weeks. Find the constraint and improve factory profitability.">
+<meta name="description" content="Moneymaker: five machines, six months. Find the constraint and improve factory profitability.">
 <title>Moneymaker! — A BufferLogic Learning Experience</title>
 <style>
 :root{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#e9f2f8;background:#0c1420;font-synthesis:none;--accent:#52dbae;--amber:#f5b963;--muted:#9fb4c4;--card:#142234;--line:#2c3e52}
@@ -61,6 +61,11 @@ button:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:3px 
 .st-sub{fill:#a9bac8;font-size:10px}
 .st-status{font-size:10px;font-weight:700;fill:#8fd8bc}
 .st-status.starved{fill:#f5b963}
+.st-status.st-metric{fill:#e7dcff;font-weight:800}
+.st-metric .m-lbl{fill:#c9b8ff;font-weight:800;letter-spacing:.04em}
+.st-metric .m-val{fill:#ffffff;font-weight:900}
+.st-metric .m-unit{fill:#c9b8ff;font-weight:700}
+.metric-bg{fill:#2d2456;stroke:#7d6bd1;stroke-width:1}
 .st-status.idle{fill:#ff9b8a}
 .st-oee{font-size:11px;font-weight:800;fill:#c9b8ff}
 .wip-num{font-weight:900;fill:#f7c779}
@@ -97,6 +102,15 @@ button:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:3px 
 @keyframes glow{from{opacity:.35}to{opacity:1}}
 @keyframes smoke{0%{opacity:.7;transform:translateY(0) scale(.6)}100%{opacity:0;transform:translateY(-16px) scale(1.4)}}
 @keyframes arm{0%,100%{transform:rotate(-28deg)}50%{transform:rotate(22deg)}}
+.report-choices{display:grid;gap:10px;margin-top:6px}
+.report-choice{position:relative;text-align:left;border:1px solid #46657b;background:#223a4f;border-radius:12px;padding:14px 16px;color:#e9f2f8;min-height:64px}
+.report-choice:hover,.report-choice:focus-visible{background:#2b5063;border-color:#83c9b2}
+.report-choice strong{display:block;font-size:16px}.report-choice span{display:block;font-size:13px;color:#b7cad6;margin-top:4px;line-height:1.45}
+.report-choice em{position:absolute;right:12px;top:12px;font-style:normal;font-size:10px;font-weight:800;color:#2b1a05;background:#f5b963;border-radius:6px;padding:2px 6px}
+.debrief{margin:10px 0 12px;padding:12px 14px;background:#1f3447;border-radius:12px;border:1px solid #33506a}
+.debrief h3{margin:0 0 4px;font-size:16px}
+.reveal-table th.yours{color:#e9f2f8}
+.tiny{color:#7896aa;font-weight:700;letter-spacing:.04em;margin-left:6px}
 .tap-hint{text-align:center;margin:10px 0 0;font-size:13px;font-weight:700;color:#bfe9d8}
 .station-picks{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
 .station-pick{border:1px solid #46657b;background:#223a4f;border-radius:10px;padding:10px 6px;color:#e2f0f6;min-height:58px;text-align:center}
@@ -119,7 +133,15 @@ button.ghost{color:#b4c9d4;background:transparent;border:1px solid #344b60}
 .panel-title{font-weight:800;font-size:15px}
 .choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .choice{border:1px solid #477364;background:#234437;border-radius:10px;text-align:left;padding:12px;color:#e2f6eb;min-height:64px}
-.choice.upper{border-color:#436582;background:#203a53}
+.choice-wrap{position:relative;display:flex;flex-direction:column}
+.choice-wrap .choice{flex:1;border-color:#46657b;background:#223a4f;color:#e2f0f6}
+.choice-wrap .choice:hover:not(:disabled){background:#2b5063;border-color:#83c9b2}
+.choice-wrap.bought .choice{background:#1d5a45;border-color:#52dbae;box-shadow:0 0 0 2px #2a7d5f inset}
+.bought-note{display:block;font-style:normal;font-size:12px;font-weight:800;color:#bff5df;margin-top:8px;padding-right:52px}
+.undo{position:absolute;right:10px;bottom:10px;background:#0f2a22;border:1px solid #52dbae;color:#bff5df;border-radius:8px;font-size:12px;font-weight:800;padding:6px 10px;min-height:32px}
+.undo:hover:not(:disabled){background:#174a39}
+.imp-badge rect{fill:#52dbae;stroke:#0c1420;stroke-width:2}
+.imp-badge text{fill:#08221c;font-size:11px;font-weight:900}
 .choice strong{display:block;font-size:15px}
 .choice span{display:block;font-size:12px;color:#c2d9cf;margin-top:4px;line-height:1.4}
 .panel p{font-size:13px;color:#b7cad6;line-height:1.55;margin:8px 0 0}
@@ -210,40 +232,38 @@ footer{font-size:11px;color:#7d90a2;text-align:center;padding:6px 0 28px}
   <button id="howButton" class="text-button" type="button">How to play ⓘ</button>
 </header>
 <main>
-<section class="hero"><h1>MONEYMAKER<span class="bang">!</span></h1><p>Five machines. Three weeks. Can you improve factory profitability?</p></section>
+<section class="hero"><h1>MONEYMAKER<span class="bang">!</span></h1><p>Five machines. Six months. Can you improve factory profitability?</p></section>
 
 <section class="scoregrid" aria-label="Scoreboard">
-  <div class="scorebox"><span class="scorelabel">DAY</span><strong id="dayCount">0 <small>/ 21</small></strong><div class="meter"><div id="dayMeter"></div></div></div>
-  <div class="scorebox"><span class="scorelabel">SHIPPED / TARGET</span><strong id="shippedCount">0 <small>/ 90</small></strong><div class="meter"><div id="shipMeter"></div></div></div>
+  <div class="scorebox"><span class="scorelabel">WEEK <span id="monthTxt" class="tiny">Month 1</span></span><strong id="dayCount">0 <small>/ 24</small></strong><div class="meter"><div id="dayMeter"></div></div></div>
+  <div class="scorebox"><span class="scorelabel">SHIPPED / TARGET</span><strong id="shippedCount">0 <small>/ 545</small></strong><div class="meter"><div id="shipMeter"></div></div></div>
   <div class="scorebox"><span class="scorelabel">NET PROFIT</span><strong id="profitCount">$0</strong><div class="meter" aria-hidden="true" style="visibility:hidden"><div></div></div></div>
 </section>
 
 <section class="card" aria-labelledby="factoryTitle">
   <div class="section-heading">
     <div><div class="eyebrow">YOUR FACTORY</div><h2 id="factoryTitle">Watch the crates move</h2></div>
-    <div class="head-tools"><span id="plantLabel" class="plant-tag">Plant A</span><button type="button" class="pill" id="oeeButton" aria-pressed="false">Show OEE</button></div>
+    <div class="head-tools"><span id="plantLabel" class="plant-tag">Plant A</span><button type="button" class="pill" id="reportButton" aria-expanded="false">Choose report</button></div>
   </div>
   <div class="scene-wrap"><svg id="scene" role="group" aria-label="Production line: raw material, five stations, inventory between stations, shipping dock"></svg></div>
   <p class="tap-hint">👆 Tap any machine to improve it</p>
   <div class="legend" aria-hidden="true"><span><i style="background:#9aa9b5"></i>Raw material</span><span><i style="background:#efb662"></i>Work in process (waiting)</span><span><i style="background:#5fdca9"></i>Finished goods</span></div>
   <div class="controls">
-    <button type="button" id="day1" class="primary">Advance 1 Day</button>
-    <button type="button" id="day7" class="secondary">Advance 7 Days</button>
+    <button type="button" id="day1" class="primary">Advance 1 Week</button>
+    <button type="button" id="day7" class="secondary">Advance 1 Month</button>
     <button type="button" id="improveButton" class="secondary">Improve Machine</button>
   </div>
   <p id="gameStatus" class="status" role="status" aria-live="polite"></p>
   <div id="upgradePanel" class="panel" hidden></div>
-  <div id="oeePanel" class="panel oee-panel" hidden>
-    <p><strong>How OEE is measured here.</strong> Availability and Quality are assumed to be 100%, so OEE = Performance = <em>units the station actually made ÷ its theoretical average daily roll</em>. Days a station spent waiting for material count against it. A low OEE can mean the machine is <em>starved</em>, not broken. Lucky streaks can push OEE above 100%. This is a teaching simplification, not a standard OEE study. OEE is extra information. Your score is net profit.</p>
-  </div>
+  <div id="reportPanel" class="panel oee-panel" hidden><div id="reportPanelBody"></div></div>
 </section>
 
 <section class="lower">
   <div class="card small-card">
     <div class="eyebrow">GAME FINANCES</div><h2>Where profit comes from</h2>
     <div class="ledger">
-      <div><span>Throughput (<span id="tpUnits">0</span> shipped × <span id="tpRate">$400</span>)</span><strong id="contrib">$0</strong></div>
-      <div><span>Operating expense (<span id="opDay">0</span> days × <span id="oeRate">$1,000</span>)</span><strong id="expense">$0</strong></div>
+      <div><span>Throughput (<span id="tpUnits">0</span> shipped × <span id="tpRate">$250</span>)</span><strong id="contrib">$0</strong></div>
+      <div><span>Operating expense (<span id="opDay">0</span> weeks × <span id="oeRate">$4,000</span>)</span><strong id="expense">$0</strong></div>
       <div><span>Improvement spending</span><strong id="invest">$0</strong></div>
       <div class="ledger-total"><span>Net profit</span><strong id="ledgerProfit">$0</strong></div>
     </div>
@@ -254,13 +274,13 @@ footer{font-size:11px;color:#7d90a2;text-align:center;padding:6px 0 28px}
   </div>
   <div class="card small-card">
     <div class="eyebrow">YOUR RECORDS · THIS BROWSER</div><h2>Can you do better?</h2>
-    <div class="record"><span>All-time best (day 21)</span><strong id="bestAll">—</strong></div>
+    <div class="record"><span>All-time best (6 months)</span><strong id="bestAll">—</strong></div>
     <div class="record"><span id="monthLabel">Best this month</span><strong id="bestMonth">—</strong></div>
     <div class="replay">
       <button type="button" id="replayButton" class="secondary">Play Again</button>
       <button type="button" id="differentButton" class="secondary">Different Plant</button>
       <button type="button" id="resetButton" class="ghost">Same Rolls</button>
-      <button type="button" id="resultsButton" class="ghost" disabled>Day-21 results</button>
+      <button type="button" id="resultsButton" class="ghost" disabled>Six-month results</button>
     </div>
     <p class="footnote"><strong>Play Again:</strong> same plant, new dice rolls. <strong>Different Plant:</strong> the same five machines in new positions. <strong>Same Rolls:</strong> restart this plant with the identical dice sequence to compare strategies. All improvements reset.</p>
     <p class="note">Scores and your game in progress are saved only in this browser on this device. Clearing browser data, using a private window, or switching devices starts you over.</p>
@@ -268,15 +288,15 @@ footer{font-size:11px;color:#7d90a2;text-align:center;padding:6px 0 28px}
 </section>
 
 <section class="card" style="margin-bottom:18px">
-  <div class="section-heading"><div><div class="eyebrow">LEARN FROM THE FACTORY</div><h2>Shipments over time</h2></div><span id="upgradeCount" class="footnote">0 improvements</span></div>
+  <div class="section-heading"><div><div class="eyebrow">LEARN FROM THE FACTORY</div><h2>Weekly shipments</h2></div><span id="upgradeCount" class="footnote">0 improvements</span></div>
   <div class="history-stats">
-    <div><small>7-day average</small><strong id="ship7">—</strong><span id="ship7delta" class="delta"></span></div>
+    <div><small>4-week average</small><strong id="ship7">—</strong><span id="ship7delta" class="delta"></span></div>
     <div><small>Total WIP</small><strong id="totalWip">16</strong></div>
-    <div><small>Days played</small><strong id="allDays">0</strong></div>
+    <div><small>Weeks played</small><strong id="allDays">0</strong></div>
   </div>
-  <div class="chart-legend" aria-hidden="true"><span><i class="lg-bar"></i>Shipped each day</span><span><i class="lg-avg"></i>7-day average</span><span><i class="lg-goal"></i>Target pace (<span id="paceTxt">4.3</span>/day)</span><span><b class="lg-imp">▲</b>Improvement took effect</span></div>
+  <div class="chart-legend" aria-hidden="true"><span><i class="lg-bar"></i>Shipped each week</span><span><i class="lg-avg"></i>4-week average</span><span><i class="lg-goal"></i>Target pace (<span id="paceTxt">22.7</span>/week)</span><span><b class="lg-imp">▲</b>Improvement took effect</span></div>
   <div class="chart" id="chart"><div class="chart-tip" id="chartTip" hidden></div></div>
-  <p class="note">Daily shipments bounce around with the dice. Watch the <strong>blue 7-day average</strong>: if an improvement worked, the line climbs after the ▲. The shaded area after day 21 is free play and doesn't count toward your record.</p>
+  <p class="note">Weekly shipments still bounce around with the dice. Watch the <strong>blue 4-week average</strong>: if an improvement worked, the line climbs after the ▲. The shaded area after week 24 is free play and doesn't count toward your record.</p>
 </section>
 </main>
 <footer>© <span id="year"></span> BufferLogic · Moneymaker is a learning simulation, not a forecasting tool.</footer>
@@ -288,20 +308,30 @@ footer{font-size:11px;color:#7d90a2;text-align:center;padding:6px 0 28px}
     <div class="eyebrow">HOW TO PLAY</div>
     <h2 id="howTitle">Make more money, not just more parts.</h2>
     <ul>
-      <li>Five machines work in a line. Each day, each one rolls hidden dice to decide how much it <em>could</em> make. It can only work on material that was waiting for it at the start of the day.</li>
-      <li>Press <strong>Advance 1 Day</strong> or <strong>Advance 7 Days</strong> and watch the crates. <strong>Watch where crates pile up.</strong></li>
-      <li>Tap a machine, then choose <strong>Raise Minimum</strong> (better bad days) or <strong>Raise Maximum</strong> (better good days). Each improvement costs <span class="costTxt">$1,000</span>.</li>
-      <li>Ship at least <span class="targetTxt">90</span> units and finish day 21 (three weeks) with as much net profit as you can. Customers will buy everything you ship.</li>
-      <li>You can keep playing after day 21, but only day 21 counts toward your record. The 7-day average line on the chart shows whether your changes are working.</li>
+      <li>Five machines work in a line. Each workday, each one rolls hidden dice to decide how much it <em>could</em> make. It can only work on material that was waiting for it at the start of the day.</li>
+      <li>A week is five workdays. Press <strong>Advance 1 Week</strong> or <strong>Advance 1 Month</strong> and watch the crates. <strong>Watch where crates pile up.</strong> You get a report at the end of each week.</li>
+      <li>Before you start, choose the <strong>one report</strong> you will manage by: average throughput, standalone throughput (SAT) or OEE. It stays locked for the whole game.</li>
+      <li>Tap a machine, then choose <strong>Raise Minimum</strong> (better bad days) or <strong>Raise Maximum</strong> (better good days). Each improvement costs <span class="costTxt">$3,500</span> and adds 1 unit to that end of its daily dice.</li>
+      <li>Ship at least <span class="targetTxt">545</span> units in six months (24 weeks) and finish with as much net profit as you can. Customers will buy everything you ship.</li>
+      <li>You can keep playing after week 24, but only week 24 counts toward your record.</li>
     </ul>
     <button type="button" class="primary" data-close>Let's make some money →</button>
+  </div>
+</div>
+
+<div id="reportModal" class="modal-backdrop" data-locked hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+    <div class="eyebrow">BEFORE YOU START</div>
+    <h2 id="reportTitle">Which report will you manage by?</h2>
+    <p>Every machine will show this one number, updated at the end of each week. You can't switch during the game. To try a different report, start a new game.</p>
+    <div id="reportChoices" class="report-choices"></div>
   </div>
 </div>
 
 <div id="resultModal" class="modal-backdrop" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
     <button type="button" class="modal-close" data-close aria-label="Close">✕</button>
-    <div class="eyebrow">DAY 21 · RESULTS</div>
+    <div class="eyebrow">SIX MONTHS · RESULTS</div>
     <div id="resultBody"></div>
   </div>
 </div>
@@ -319,34 +349,41 @@ footer{font-size:11px;color:#7d90a2;text-align:center;padding:6px 0 28px}
 (() => {
 /* ---------- 1. Configuration (hidden machine dice live here) ---------- */
 const CONFIG = {
-  DAY_LIMIT: 21, TARGET: 90,
-  UNIT_THROUGHPUT: 400, DAILY_OE: 1000, IMPROVEMENT_COST: 1000,
+  WEEK_LIMIT: 24, DAYS_PER_WEEK: 5, WEEKS_PER_MONTH: 4, TARGET: 545,
+  UNIT_THROUGHPUT: 250, WEEKLY_OE: 4000, IMPROVEMENT_COST: 3500,
   INITIAL_WIP: [4,4,4,4],
-  // Flat (uniform) integer dice ranges. Drill is the built-in constraint.
+  // Flat (uniform) integer dice per DAY. Drill press is the first constraint;
+  // the lathe is the hidden second one that takes over after two drill fixes.
   MACHINES: [
     {id:0, name:"Stamping press", lo:2, hi:10},
-    {id:1, name:"Lathe",          lo:3, hi:9},
+    {id:1, name:"Lathe",          lo:3, hi:6},
     {id:2, name:"Drill press",    lo:2, hi:6},
     {id:3, name:"Heat-treat oven",lo:4, hi:8},
     {id:4, name:"Packing robot",  lo:3, hi:10}
   ],
   PLANT_ORDERS: [[0,1,2,3,4],[3,0,4,2,1],[2,4,0,3,1],[4,2,1,0,3],[1,3,0,4,2]],
-  STORAGE_KEY: "moneymaker-v3-state", RECORDS_KEY: "moneymaker-v3-records"
+  REPORTS: {
+    avg:{label:"Average throughput", short:"Avg", desc:"What each station has actually produced per week, on average."},
+    sat:{label:"Standalone throughput (SAT)", short:"SAT", desc:"What each station could produce per week if it never ran out of material."},
+    oee:{label:"OEE", short:"OEE", desc:"Each station's performance: what it actually made ÷ what it is expected to make. Availability and quality are 100%."}
+  },
+  STORAGE_KEY: "moneymaker-v4-state", RECORDS_KEY: "moneymaker-v4-records"
 };
-const {DAY_LIMIT,TARGET,UNIT_THROUGHPUT,DAILY_OE,IMPROVEMENT_COST} = CONFIG;
+const {WEEK_LIMIT,DAYS_PER_WEEK,WEEKS_PER_MONTH,TARGET,UNIT_THROUGHPUT,WEEKLY_OE,IMPROVEMENT_COST} = CONFIG;
 
 /* ---------- 2. Pure simulation (no DOM) ---------- */
 function pseudoRandom(seed,day,machineId){let x=(seed ^ Math.imul(day+1,0x9e3779b9) ^ Math.imul(machineId+11,0x85ebca6b))>>>0;x^=x>>>16;x=Math.imul(x,0x7feb352d);x^=x>>>15;x=Math.imul(x,0x846ca68b);x^=x>>>16;return (x>>>0)/4294967296}
 const randomSeed=()=>{try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]>>>0}catch{return Math.floor(Math.random()*4294967295)>>>0}};
 const avgOf=m=>(m.lo+m.hi)/2;
 const rollFor=(m,seed,day)=>m.lo+Math.floor(pseudoRandom(seed,day,m.id)*(m.hi-m.lo+1));
+const weeksOf=s=>Math.floor(s.day/DAYS_PER_WEEK);
 
-function createGame(order=[0,1,2,3,4],seed=randomSeed(),plant=0){
-  return {version:3,order:order.slice(),seed,plant,day:0,wip:CONFIG.INITIAL_WIP.slice(),
+function createGame(order=[0,1,2,3,4],seed=randomSeed(),plant=0,metric=null){
+  return {version:4,order:order.slice(),seed,plant,metric,day:0,wip:CONFIG.INITIAL_WIP.slice(),
     machines:CONFIG.MACHINES.map(m=>({id:m.id,lo:m.lo,hi:m.hi})),
     shipments:0,spending:0,upgrades:[],daily:[],finished:null};
 }
-/* One day. Fixed sequence: every station sees only the material that was
+/* One workday. Fixed sequence: every station sees only the material that was
    waiting at the START of the day, so nothing is processed twice in a day.
    Raw material in front of station 1 is unlimited. */
 function stepDay(s){
@@ -356,32 +393,53 @@ function stepDay(s){
   const output=possible.map((p,i)=>Math.min(p,available[i]));
   const after=before.map((w,i)=>w+output[i]-output[i+1]);
   s.wip=after; s.shipments+=output[4]; s.day++;
-  const rec={day:s.day,possible,output,shipped:output[4],wipBefore:before,wip:after.slice(),
+  const rec={day:s.day,possible,output,shipped:output[4],wipBefore:before,wip:after.slice(),cum:s.shipments,
     avg:s.order.map(id=>avgOf(s.machines[id]))};
   s.daily.push(rec);
   return rec;
 }
+/* One week = five workdays, reported together. */
+function stepWeek(s){const recs=[];for(let d=0;d<DAYS_PER_WEEK;d++)recs.push(stepDay(s));return recs}
 function applyImprovement(s,pos,kind){
   const id=s.order[pos], m=s.machines[id];
   if(kind==="min"){ if(m.lo>=m.hi-1) return {ok:false,reason:"consistent"}; m.lo++; }
   else if(kind==="max"){ m.hi++; }
   else return {ok:false,reason:"kind"};
   s.spending+=IMPROVEMENT_COST;
-  s.upgrades.push({day:s.day,machine:id,position:pos,kind,cost:IMPROVEMENT_COST});
+  s.upgrades.push({week:weeksOf(s),machine:id,position:pos,kind,cost:IMPROVEMENT_COST});
   return {ok:true};
 }
-const profitOf=s=>s.shipments*UNIT_THROUGHPUT - s.day*DAILY_OE - s.spending;
-function oeeOf(s){ // per position: actual made / sum of theoretical daily averages
-  return s.order.map((_,i)=>{let made=0,avg=0;for(const d of s.daily){made+=d.output[i];avg+=d.avg[i]}return avg?made/avg:null});
+/* Undo a purchase made this week (nothing has run since, so it is harmless). */
+function undoImprovement(s,pos,kind){
+  const id=s.order[pos], m=s.machines[id], w=weeksOf(s);
+  const k=s.upgrades.map((u,i)=>[u,i]).filter(([u])=>u.machine===id&&u.kind===kind&&u.week===w).map(([,i])=>i).pop();
+  if(k===undefined) return {ok:false,reason:"none"};
+  if(kind==="max"&&m.hi-1<=m.lo) return {ok:false,reason:"order"};
+  if(kind==="min") m.lo--; else m.hi--;
+  s.spending-=s.upgrades[k].cost; s.upgrades.splice(k,1);
+  return {ok:true};
+}
+const boughtThisWeek=(s,pos,kind)=>s.upgrades.filter(u=>u.machine===s.order[pos]&&u.kind===kind&&u.week===weeksOf(s)).length;
+const profitOf=s=>s.shipments*UNIT_THROUGHPUT - weeksOf(s)*WEEKLY_OE - s.spending;
+/* The three reports, per station position, from all weeks played so far.
+   avg: units actually made per week (starving included)
+   sat: standalone throughput, the station's own daily rolls per week
+   oee: units made ÷ expected units (theoretical average roll), A = Q = 100% */
+function metricsOf(s){
+  const w=weeksOf(s);
+  return s.order.map((_,i)=>{let made=0,roll=0,exp=0;for(const d of s.daily){made+=d.output[i];roll+=d.possible[i];exp+=d.avg[i]}
+    return w?{avg:made/w,sat:roll/w,oee:exp?made/exp:null}:{avg:null,sat:null,oee:null}});
 }
 function pileGap(s){ // inbound pile minus outbound pile, per station (station 1 inbound = raw, shown as null)
   return s.order.map((_,i)=>i===0?null:(s.wip[i-1]-(i===4?0:s.wip[i])));
 }
-function baselineProfit(order,seed){ const b=createGame(order,seed); for(let d=0;d<DAY_LIMIT;d++)stepDay(b); return {profit:profitOf(b),shipments:b.shipments}; }
+function baselineProfit(order,seed){ const b=createGame(order,seed); for(let w=0;w<WEEK_LIMIT;w++)stepWeek(b); return {profit:profitOf(b),shipments:b.shipments}; }
 const nextOrder=o=>{const L=CONFIG.PLANT_ORDERS;const i=L.findIndex(p=>p.every((v,j)=>v===o[j]));return L[(i+1)%L.length].slice()};
-function validSaved(x){return !!(x&&x.version===3&&Array.isArray(x.order)&&x.order.length===5&&new Set(x.order).size===5&&
+function validSaved(x){return !!(x&&x.version===4&&Array.isArray(x.order)&&x.order.length===5&&new Set(x.order).size===5&&
+  (x.metric===null||x.metric in CONFIG.REPORTS)&&
   Array.isArray(x.machines)&&x.machines.length===5&&x.machines.every((m,i)=>m.id===i&&Number.isInteger(m.lo)&&Number.isInteger(m.hi)&&m.lo>=0&&m.hi>m.lo)&&
-  Array.isArray(x.wip)&&x.wip.length===4&&x.wip.every(n=>Number.isInteger(n)&&n>=0)&&Number.isInteger(x.day)&&Array.isArray(x.daily)&&x.daily.length===x.day&&Number.isInteger(x.seed))}
+  Array.isArray(x.wip)&&x.wip.length===4&&x.wip.every(n=>Number.isInteger(n)&&n>=0)&&Number.isInteger(x.day)&&x.day%DAYS_PER_WEEK===0&&
+  Array.isArray(x.daily)&&x.daily.length===x.day&&Number.isInteger(x.seed))}
 
 /* ---------- 3. Persistence ---------- */
 let state; try{const raw=JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY));state=validSaved(raw)?raw:createGame()}catch{state=createGame()}
@@ -396,10 +454,10 @@ function recordGame(){
   const profit=profitOf(state), prevAll=r.all?r.all.profit:null;
   const metTarget=state.shipments>=TARGET, newBest=prevAll!==null&&profit>prevAll;
   const base=baselineProfit(state.order,state.seed);
-  state.finished={profit,shipments:state.shipments,spending:state.spending,upgrades:state.upgrades.length,
-    metTarget,newBest,prevBest:prevAll,baseline:base,oee:oeeOf(state),gap:pileGap(state),wip:state.wip.slice(),
+  state.finished={profit,shipments:state.shipments,spending:state.spending,upgrades:state.upgrades.length,upgradeList:state.upgrades.slice(),
+    metTarget,newBest,prevBest:prevAll,baseline:base,metrics:metricsOf(state),gap:pileGap(state),wip:state.wip.slice(),metric:state.metric,
     machines:state.machines.map(m=>({...m})),order:state.order.slice(),plant:state.plant,seen:false};
-  const entry={profit,shipments:state.shipments,date:new Date().toISOString()};
+  const entry={profit,shipments:state.shipments,metric:state.metric,date:new Date().toISOString()};
   if(!r.all||profit>r.all.profit) r.all=entry;
   const mk=monthKey(); if(!r.months[mk]||profit>r.months[mk].profit) r.months[mk]=entry;
   writeRecords(r);
@@ -465,7 +523,7 @@ const MACHINE_ART = {
 function makeLayout(narrow){
   if(!narrow){
     const W=1040,H=246, mw=120, mh=100, my=40, xs=[70,260,450,640,830];
-    const st=xs.map((x,i)=>({x,y:my,w:mw,h:mh,lx:x+mw/2,ly:30,numY:170,subY:186,statusY:202,oeeY:222,
+    const st=xs.map((x,i)=>({x,y:my,w:mw,h:mh,lx:x+mw/2,ly:30,numY:168,subY:183,statusY:209,oeeY:224,
       inP:[x+6,my+82],outP:[x+114,my+82]}));
     const buf=[0,1,2,3].map(i=>{const x0=xs[i]+mw+5,x1=xs[i+1]-5;return {x0,x1,top:58,bottom:130,lx:(x0+x1)/2,ly:50,fs:20,anchor:"middle",
       route:[st[i].outP],belt:[[xs[i]+mw-2,130,xs[i+1]-(xs[i]+mw-2)+2,7]]}});
@@ -477,7 +535,7 @@ function makeLayout(narrow){
   const W=440,H=404, mw=96, mh=80;
   const r1=24, r2=252;
   const pos=[[34,r1],[178,r1],[322,r1],[322,r2],[178,r2]];
-  const st=pos.map(([x,y],i)=>{const row2=i>=3;return {x,y,w:mw,h:mh,lx:x+mw/2,ly:y-8,numY:y+mh+22,subY:y+mh+35,statusY:y+mh+48,oeeY:y+mh+61,
+  const st=pos.map(([x,y],i)=>{const row2=i>=3;return {x,y,w:mw,h:mh,lx:x+mw/2,ly:y-8,numY:y+mh+21,subY:y+mh+33,statusY:y+mh+53,oeeY:y+mh+63,
     inP: i===3?[x+mw/2,y+4]:(row2?[x+mw-4,y+66]:[x+4,y+66]),
     outP: row2?[x+4,y+66]:(i===2?[x+mw-2,y+66]:[x+mw-4,y+66])}});
   const buf=[
@@ -549,12 +607,15 @@ function buildScene(){
     const msvg=S("svg",{x:p.x,y:p.y,width:p.w,height:p.h,viewBox:"0 0 120 100",class:"machine"},g);
     const num=S("text",{x:p.lx,y:p.numY,"text-anchor":"middle",class:"st-num","font-size":L.narrow?22:28},g);
     const sub=S("text",{x:p.lx,y:p.subY,"text-anchor":"middle",class:"st-sub"},g);
+    const metricBg=S("rect",{class:"metric-bg",rx:7,width:0,height:0},g);
     const status=S("text",{x:p.lx,y:p.statusY,"text-anchor":"middle",class:"st-status"},g);
     const oee=S("text",{x:p.lx,y:p.oeeY,"text-anchor":"middle",class:"st-oee"},g);
+    const badge=S("g",{class:"imp-badge",transform:`translate(${p.x+p.w-4},${p.y+2})`},g);
+    S("rect",{x:-14,y:-9,width:28,height:18,rx:9},badge); const badgeT=S("text",{x:0,y:4.5,"text-anchor":"middle"},badge);
     const select=()=>selectStation(i);
     g.addEventListener("click",select);
     g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select()}});
-    return {g,msvg,num,sub,status,oee,p,machineId:null};
+    return {g,msvg,num,sub,status,metricBg,oee,badge,badgeT,p,machineId:null};
   });
   scene.money=S("g",{},svg);
   scene.flyLayer=S("g",{"pointer-events":"none"},svg);
@@ -572,28 +633,42 @@ function drawPile(i,count){
   pile.num.setAttribute("class","wip-num"+(count>=20?" vhigh":count>=12?" high":""));
   pile.over.textContent=count>pile.cap?`+${count-pile.cap}`:"";
 }
+function fmtMetric(key,v){
+  if(v==null) return `${CONFIG.REPORTS[key].short} —`;
+  return key==="oee"?`OEE ${Math.round(v*100)}%`:`${CONFIG.REPORTS[key].short} ${v.toFixed(1)}/wk`;
+}
+/* The chosen report, drawn large on a tag under each machine: label, value, unit. */
+function drawMetric(s,v){
+  const key=state.metric; s.status.replaceChildren(); s.status.setAttribute("class","st-status st-metric");
+  if(!key){s.metricBg.setAttribute("width",0);return}
+  const big=scene.layout&&!scene.layout.narrow;
+  const val=v==null?"—":key==="oee"?`${Math.round(v*100)}%`:v.toFixed(1);
+  const unit=v==null||key==="oee"?"":"/wk";
+  S("tspan",{class:"m-lbl","font-size":big?12:11},s.status).textContent=CONFIG.REPORTS[key].short+" ";
+  S("tspan",{class:"m-val","font-size":big?19:17},s.status).textContent=val;
+  if(unit) S("tspan",{class:"m-unit","font-size":big?11:10},s.status).textContent=unit;
+  try{const b=s.status.getBBox();s.metricBg.setAttribute("x",b.x-7);s.metricBg.setAttribute("y",b.y-2);s.metricBg.setAttribute("width",b.width+14);s.metricBg.setAttribute("height",b.height+4)}catch{}
+}
 function refreshScene(){
   if(!scene.layout) return;
-  const last=state.daily.at(-1), oee=oeeOf(state), showOEE=uiState.showOEE;
-  state.wip.forEach((w,i)=>drawPile(i,w));
+  const w=weeksOf(state), week=w?state.daily.slice(-DAYS_PER_WEEK):null, mets=metricsOf(state);
+  state.wip.forEach((x,i)=>drawPile(i,x));
   scene.stations.forEach((s,i)=>{
     const id=state.order[i];
     if(s.machineId!==id){s.msvg.innerHTML=MACHINE_ART[id];s.msvg.setAttribute("data-machine",id);s.machineId=id}
     s.g.classList.toggle("selected",uiState.selected===i);
     s.g.setAttribute("aria-pressed",uiState.selected===i?"true":"false");
-    if(last){
-      const out=last.output[i], short=out<last.possible[i];
-      s.num.textContent=out; s.sub.textContent="made today";
-      s.status.textContent= out===0?"Idle: no material": short?"Starved: ran out":"Ran at full roll";
-      s.status.setAttribute("class","st-status"+(out===0?" idle":short?" starved":""));
-      s.g.classList.toggle("idle",out===0);
-    }else{s.num.textContent="—";s.sub.textContent="made today";s.status.textContent="Ready";s.status.setAttribute("class","st-status");s.g.classList.remove("idle")}
-    s.oee.textContent=showOEE?(oee[i]==null?"OEE —":`OEE ${Math.round(oee[i]*100)}%`):"";
+    const made=week?week.reduce((a,d)=>a+d.output[i],0):null;
+    s.num.textContent=made===null?"—":made; s.sub.textContent="made this week";
+    drawMetric(s,state.metric?mets[i][state.metric]:undefined);
+    const nImp=state.upgrades.filter(u=>u.machine===id).length;
+    s.badge.style.display=nImp?"":"none"; s.badgeT.textContent=`↑${nImp}`;
+    s.oee.textContent="";
     const name=CONFIG.MACHINES[id].name;
-    s.g.setAttribute("aria-label",`Station ${i+1}, ${name}. ${last?`Made ${last.output[i]} today.`:"Not yet run."}${i<4?` ${state.wip[i]} units waiting after it.`:""} Select to improve.`);
+    s.g.setAttribute("aria-label",`Station ${i+1}, ${name}. ${made===null?"Not yet run.":`Made ${made} this week.`} ${state.metric?fmtMetric(state.metric,mets[i][state.metric])+".":""}${i<4?` ${state.wip[i]} units waiting after it.`:""} Select to improve.`);
   });
   scene.dockNum.textContent=state.shipments;
-  scene.dockSub.textContent=last?`+${last.shipped} today`:"units";
+  scene.dockSub.textContent=week?`+${week.reduce((a,d)=>a+d.shipped,0)} this week`:"units";
 }
 
 /* ---------- 8. Animation engine: every moving crate comes from the day record ---------- */
@@ -640,7 +715,8 @@ function playDay(rec,dur){
   const L=scene.layout; const out=rec.output, before=rec.wipBefore;
   const log={day:rec.day,pulled:[0,0,0,0,0],pushed:[0,0,0,0,0],shipped:0,runningStations:[],pileEnd:null};
   animLog.push(log);
-  if(dur<=0||!L){refreshScene();log.pileEnd=scene.piles.map(p=>p.count);out.forEach((o,i)=>{log.pulled[i]=o;log.pushed[i]=o});log.shipped=out[4];return Promise.resolve()}
+  const settle=()=>{rec.wip.forEach((w,i)=>drawPile(i,w));scene.dockNum.textContent=rec.cum};
+  if(dur<=0||!L){settle();log.pileEnd=scene.piles.map(p=>p.count);out.forEach((o,i)=>{log.pulled[i]=o;log.pushed[i]=o});log.shipped=out[4];return Promise.resolve()}
   return new Promise(resolve=>{
     const t0=performance.now();
     const pA=dur*0.32, pB=dur*0.30, pC=dur*0.38; // phase lengths
@@ -679,7 +755,7 @@ function playDay(rec,dur){
       $("scene").classList.remove("running-belts");
       scene.stations.forEach(s=>s.msvg.classList.remove("running"));
       log.pileEnd=scene.piles.map(p=>p.count);
-      refreshScene(); resolve();
+      settle(); resolve();
     },dur+40);
   });
 }
@@ -687,92 +763,102 @@ const svgRoot=()=>$("scene");
 function isNarrow(){const w=document.querySelector(".scene-wrap").clientWidth||window.innerWidth;return w<760}
 
 /* ---------- 9. UI state & rendering ---------- */
-const uiState={selected:null,picking:false,showOEE:false,busy:false};
+const uiState={selected:null,picking:false,showReport:false,busy:false};
 let message="";
 function setMessage(m){message=m;$("gameStatus").textContent=m}
+const plural=(n,w)=>`${n} ${w}${n===1?"":"s"}`;
 
 function renderNumbers(){
-  const r=readRecords(),mk=monthKey(),p=profitOf(state);
-  $("dayCount").innerHTML=`${state.day} <small>/ ${DAY_LIMIT}</small>`;
+  const r=readRecords(),mk=monthKey(),p=profitOf(state),w=weeksOf(state);
+  $("dayCount").innerHTML=`${w} <small>/ ${WEEK_LIMIT}</small>`;
+  $("monthTxt").textContent=w?`Month ${Math.min(Math.ceil(w/WEEKS_PER_MONTH),99)}${w>WEEK_LIMIT?" · free play":""}`:"Month 1";
   $("shippedCount").innerHTML=`${state.shipments} <small>/ ${TARGET}</small>`;
   const pc=$("profitCount"); pc.textContent=money(p); pc.classList.toggle("neg",p<0);
-  $("dayMeter").style.width=`${Math.min(100,state.day/DAY_LIMIT*100)}%`;
+  $("dayMeter").style.width=`${Math.min(100,w/WEEK_LIMIT*100)}%`;
   $("shipMeter").style.width=`${Math.min(100,state.shipments/TARGET*100)}%`;
   $("plantLabel").textContent=`Plant ${plantName(state.plant)}`;
+  const rep=state.metric?CONFIG.REPORTS[state.metric]:null;
+  $("reportButton").textContent=rep?`Report: ${rep.short} ⓘ`:"Choose report";
+  $("reportPanelBody").innerHTML=rep?reportExplainer(state.metric):"";
   $("tpUnits").textContent=state.shipments; $("contrib").textContent=money(state.shipments*UNIT_THROUGHPUT);
-  $("opDay").textContent=state.day; $("expense").textContent="−"+money(state.day*DAILY_OE);
+  $("opDay").textContent=w; $("expense").textContent="−"+money(w*WEEKLY_OE);
   $("invest").textContent=state.spending?"−"+money(state.spending):"$0"; $("ledgerProfit").textContent=money(p);
   $("bestAll").textContent=r.all?money(r.all.profit):"—";
   $("bestMonth").textContent=r.months&&r.months[mk]?money(r.months[mk].profit):"—";
   $("monthLabel").textContent=`Best in ${new Date().toLocaleString("en-US",{month:"long"})}`;
-  $("upgradeCount").textContent=`${state.upgrades.length} improvement${state.upgrades.length===1?"":"s"}`;
-  if(state.daily.length){const av=movingAvg(state.daily);const cur=av.at(-1).v;$("ship7").textContent=cur.toFixed(1)+"/day";
-    const prev=state.daily.length>=14?av[state.daily.length-8].v:null;
-    $("ship7delta").textContent=prev===null?(state.daily.length<7?"first week":"vs prior week after day 14"):`${cur>prev+0.05?"▲":cur<prev-0.05?"▼":"■"} ${Math.abs(cur-prev).toFixed(1)} vs prior 7 days`;}
+  $("upgradeCount").textContent=plural(state.upgrades.length,"improvement");
+  const wk=weeklyOf(state.daily);
+  if(wk.length){const av=movingAvg(wk,WEEKS_PER_MONTH);const cur=av.at(-1).v;$("ship7").textContent=cur.toFixed(1)+"/wk";
+    const prev=wk.length>=2*WEEKS_PER_MONTH?av[wk.length-1-WEEKS_PER_MONTH].v:null;
+    $("ship7delta").textContent=prev===null?(wk.length<WEEKS_PER_MONTH?"first month":"vs prior 4 weeks from week 8"):`${cur>prev+0.05?"▲":cur<prev-0.05?"▼":"■"} ${Math.abs(cur-prev).toFixed(1)} vs prior 4 weeks`;}
   else {$("ship7").textContent="—";$("ship7delta").textContent="";}
   $("totalWip").textContent=state.wip.reduce((a,b)=>a+b,0);
-  $("allDays").textContent=state.day;
-  const after=state.day>=DAY_LIMIT;
-  $("day1").textContent=after?"Advance 1 More Day":"Advance 1 Day";
-  $("day7").textContent=after?"Advance 7 More Days":(DAY_LIMIT-state.day<7&&state.day<DAY_LIMIT?`Advance ${DAY_LIMIT-state.day} Days`:"Advance 7 Days");
-  $("resultsButton").disabled=!state.finished;
-  ["day1","day7","improveButton","replayButton","differentButton","resetButton"].forEach(id=>$(id).disabled=uiState.busy);
-  if(!uiState.busy) $("resultsButton").disabled=!state.finished;
+  $("allDays").textContent=w;
+  const after=w>=WEEK_LIMIT, rem=WEEK_LIMIT-w;
+  $("day1").textContent=after?"Advance 1 More Week":"Advance 1 Week";
+  $("day7").textContent=after?"Advance 1 More Month":(rem<WEEKS_PER_MONTH?`Advance ${plural(rem,"Week")}`:"Advance 1 Month");
+  ["day1","day7","improveButton","replayButton","differentButton","resetButton","reportButton"].forEach(id=>$(id).disabled=uiState.busy);
+  if(!state.metric){$("day1").disabled=true;$("day7").disabled=true}
+  $("resultsButton").disabled=uiState.busy||!state.finished;
   renderBars(); renderUpgradePanel();
 }
-/* Shipments chart: daily bars + trailing 7-day average + target pace,
+function reportExplainer(key){
+  const t={
+    avg:"<strong>Average throughput</strong> = units each station actually made ÷ weeks played. It includes days a station spent waiting for material (starving).",
+    sat:"<strong>Standalone throughput (SAT)</strong> = what each station would have made per week with unlimited material in front of it: the total of its own daily rolls ÷ weeks played, whether or not material was there to use them.",
+    oee:"<strong>OEE</strong> = Availability × Performance × Quality. Availability and Quality are 100% here, so OEE = units actually made ÷ the station's expected output (its average roll). Days spent waiting for material count against it, and lucky streaks can push it above 100%. This is a teaching simplification, not a standard OEE study."
+  }[key];
+  return `<p>${t}</p><p>Your report is locked for this game. To manage by a different report, start a new game.</p>`;
+}
+/* Weekly shipments chart: weekly bars + trailing 4-week average + target pace,
    improvement markers, and shaded free play after the scored round. */
-function movingAvg(daily,k=7){return daily.map((_,i)=>{const w=daily.slice(Math.max(0,i-k+1),i+1);return {v:w.reduce((a,d)=>a+d.shipped,0)/w.length,full:w.length===k}})}
+function weeklyOf(daily){const out=[];for(let i=0;i+DAYS_PER_WEEK<=daily.length;i+=DAYS_PER_WEEK){const d=daily.slice(i,i+DAYS_PER_WEEK);out.push({week:out.length+1,shipped:d.reduce((a,x)=>a+x.shipped,0)})}return out}
+function movingAvg(rows,k){return rows.map((_,i)=>{const w=rows.slice(Math.max(0,i-k+1),i+1);return {v:w.reduce((a,d)=>a+d.shipped,0)/w.length,full:w.length===k}})}
 function renderBars(){
   const box=$("chart"), tip=$("chartTip");
   [...box.children].forEach(c=>{if(c!==tip)c.remove()}); tip.hidden=true;
-  $("paceTxt").textContent=(TARGET/DAY_LIMIT).toFixed(1);
-  if(!state.daily.length){const n=document.createElement("div");n.className="chart-empty";n.textContent="Advance a day to see shipments over time.";box.append(n);return}
-  const MAXD=63, all=state.daily, avgAll=movingAvg(all);
-  const first=Math.max(0,all.length-MAXD), days=all.slice(first), avg=avgAll.slice(first), N=days.length;
+  const pace=TARGET/WEEK_LIMIT; $("paceTxt").textContent=pace.toFixed(1);
+  const all=weeklyOf(state.daily);
+  if(!all.length){const n=document.createElement("div");n.className="chart-empty";n.textContent="Advance a week to see shipments over time.";box.append(n);return}
+  const MAXW=52, avgAll=movingAvg(all,WEEKS_PER_MONTH);
+  const first=Math.max(0,all.length-MAXW), rows=all.slice(first), avg=avgAll.slice(first), N=rows.length;
   const W=Math.max(280,box.clientWidth||600), narrow=W<520, H=narrow?175:200;
-  const m={l:26,r:narrow?58:74,t:12,b:24}, pw=W-m.l-m.r, ph=H-m.t-m.b;
-  const yMax=Math.max(8,Math.ceil((Math.max(...days.map(d=>d.shipped),TARGET/DAY_LIMIT)+1)/2)*2);
+  const m={l:30,r:narrow?62:78,t:12,b:24}, pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const top=Math.max(...rows.map(d=>d.shipped),pace)+2, step=top<=20?5:10, yMax=Math.ceil(top/step)*step;
   const y=v=>m.t+ph-(v/yMax)*ph, bw=pw/N, x=i=>m.l+bw*i+bw/2;
   const svg=S("svg",{viewBox:`0 0 ${W} ${H}`,width:W,height:H,role:"img"});
   const last=avg[N-1];
-  svg.setAttribute("aria-label",`Daily shipments for days ${days[0].day} to ${days[N-1].day}. Latest 7-day average ${last.v.toFixed(1)} units per day; target pace ${(TARGET/DAY_LIMIT).toFixed(1)}.`);
-  // free-play shading after the scored round
-  const lockIdx=days.findIndex(d=>d.day>DAY_LIMIT);
+  svg.setAttribute("aria-label",`Weekly shipments for weeks ${rows[0].week} to ${rows[N-1].week}. Latest 4-week average ${last.v.toFixed(1)} units per week; target pace ${pace.toFixed(1)}.`);
+  const lockIdx=rows.findIndex(d=>d.week>WEEK_LIMIT);
   if(lockIdx>=0){const x0=m.l+bw*lockIdx;S("rect",{x:x0,y:m.t,width:m.l+pw-x0,height:ph,fill:"#ffffff",opacity:.045},svg);
     S("line",{x1:x0,x2:x0,y1:m.t,y2:m.t+ph,stroke:"#8aa0b2","stroke-dasharray":"2 3"},svg);
-    const t=S("text",{x:x0+4,y:m.t+10,"font-size":10,fill:"#a9bfcd"},svg);t.textContent=lockIdx>0?`Free play →`:"Free play"}
-  // recessive grid + y labels
-  const step=yMax<=10?2:yMax<=20?4:5;
+    const t=S("text",{x:x0+4,y:m.t+10,"font-size":10,fill:"#a9bfcd"},svg);t.textContent="Free play →"}
   for(let v=0;v<=yMax;v+=step){S("line",{x1:m.l,x2:m.l+pw,y1:y(v),y2:y(v),stroke:v?"#24364a":"#3b5366"},svg);
     const t=S("text",{x:m.l-6,y:y(v)+3.5,"text-anchor":"end","font-size":10,fill:"#8aa0b2"},svg);t.textContent=v}
-  // bars (4px rounded data end, 2px gap)
-  const barW=Math.max(1.5,Math.min(22,bw-2));
-  days.forEach((d,i)=>{const h=Math.max(0,y(0)-y(d.shipped));if(!h)return;const r=Math.min(3,barW/2,h);const x0=x(i)-barW/2,y0=y(d.shipped);
+  const barW=Math.max(1.5,Math.min(26,bw-2));
+  rows.forEach((d,i)=>{const h=Math.max(0,y(0)-y(d.shipped));if(!h)return;const r=Math.min(3,barW/2,h);const x0=x(i)-barW/2,y0=y(d.shipped);
     S("path",{d:`M${x0},${y(0)}V${y0+r}Q${x0},${y0} ${x0+r},${y0}H${x0+barW-r}Q${x0+barW},${y0} ${x0+barW},${y0+r}V${y(0)}Z`,fill:"#2f9e7c"},svg)});
-  // target pace
-  S("line",{x1:m.l,x2:m.l+pw,y1:y(TARGET/DAY_LIMIT),y2:y(TARGET/DAY_LIMIT),stroke:"#8aa0b2","stroke-width":1.5,"stroke-dasharray":"5 4"},svg);
-  // 7-day average: dashed while the window is still filling (first 6 days), solid after
+  S("line",{x1:m.l,x2:m.l+pw,y1:y(pace),y2:y(pace),stroke:"#8aa0b2","stroke-width":1.5,"stroke-dasharray":"5 4"},svg);
   const pts=avg.map((a,i)=>[x(i),y(a.v)]);
   const seg=(from,to,dash)=>{if(to-from<1)return;S("polyline",{points:pts.slice(from,to+1).map(p=>p.join(",")).join(" "),fill:"none",stroke:"#6f9cf0","stroke-width":2,"stroke-linejoin":"round","stroke-linecap":"round",...(dash?{"stroke-dasharray":"3 3"}:{})},svg)};
   const firstFull=avg.findIndex(a=>a.full);
   if(firstFull<0) seg(0,N-1,true); else {seg(0,firstFull,true);seg(firstFull,N-1,false)}
   const [ex,ey]=pts[N-1];
   S("circle",{cx:ex,cy:ey,r:4,fill:"#6f9cf0",stroke:"#142234","stroke-width":2},svg);
-  const lab=S("text",{x:m.l+pw+8,y:Math.max(m.t+10,Math.min(m.t+ph-4,ey+4)),"font-size":11,"font-weight":800,fill:"#e9f2f8"},svg);lab.textContent=`${last.v.toFixed(1)}/day`;
-  const lab2=S("text",{x:m.l+pw+8,y:Math.max(m.t+10,Math.min(m.t+ph-4,ey+4))+12,"font-size":9.5,fill:"#a9bfcd"},svg);lab2.textContent="7-day avg";
-  // improvement markers: an improvement made on day d takes effect on day d+1
-  const impByDay={};state.upgrades.forEach(u=>{(impByDay[u.day+1]=impByDay[u.day+1]||[]).push(u)});
-  days.forEach((d,i)=>{if(impByDay[d.day]){const t=S("text",{x:x(i),y:m.t+ph+10,"text-anchor":"middle","font-size":9,fill:"#e9f2f8"},svg);t.textContent="▲"}});
-  // x labels: day 1 and each week boundary
-  days.forEach((d,i)=>{if(d.day===days[0].day||d.day%7===0){const t=S("text",{x:x(i),y:H-4,"text-anchor":"middle","font-size":10,fill:"#8aa0b2"},svg);t.textContent=d.day%7===0?`Day ${d.day}`:d.day}});
-  // hover / tap layer: crosshair + tooltip
+  const ly=Math.max(m.t+10,Math.min(m.t+ph-14,ey+4));
+  const lab=S("text",{x:m.l+pw+8,y:ly,"font-size":11,"font-weight":800,fill:"#e9f2f8"},svg);lab.textContent=`${last.v.toFixed(1)}/wk`;
+  const lab2=S("text",{x:m.l+pw+8,y:ly+12,"font-size":9.5,fill:"#a9bfcd"},svg);lab2.textContent="4-wk avg";
+  // an improvement bought after week w takes effect in week w+1
+  const impBy={};state.upgrades.forEach(u=>{(impBy[u.week+1]=impBy[u.week+1]||[]).push(u)});
+  rows.forEach((d,i)=>{if(impBy[d.week]){const t=S("text",{x:x(i),y:m.t+ph+10,"text-anchor":"middle","font-size":9,fill:"#e9f2f8"},svg);t.textContent=impBy[d.week].length>1?`▲${impBy[d.week].length}`:"▲"}});
+  rows.forEach((d,i)=>{if(d.week===rows[0].week||d.week%WEEKS_PER_MONTH===0){const t=S("text",{x:x(i),y:H-4,"text-anchor":"middle","font-size":10,fill:"#8aa0b2"},svg);
+    t.textContent=d.week%WEEKS_PER_MONTH===0?(narrow?`M${d.week/WEEKS_PER_MONTH}`:`Month ${d.week/WEEKS_PER_MONTH}`):`W${d.week}`}});
   const cross=S("line",{y1:m.t,y2:m.t+ph,stroke:"#d2e1ea","stroke-width":1,opacity:0},svg);
   const hit=S("rect",{x:m.l,y:m.t,width:pw,height:ph+12,fill:"transparent"},svg);
   const show=e=>{const r=svg.getBoundingClientRect();const px=(e.clientX-r.left)*(W/r.width);const i=Math.max(0,Math.min(N-1,Math.floor((px-m.l)/bw)));
-    const d=days[i],a=avg[i];cross.setAttribute("x1",x(i));cross.setAttribute("x2",x(i));cross.setAttribute("opacity",.5);
-    const imps=(impByDay[d.day]||[]).map(u=>`Station ${u.position+1} ${u.kind==="min"?"minimum":"maximum"}`);
-    tip.innerHTML=`<b>Day ${d.day}</b>${d.day>DAY_LIMIT?" · free play":""}<br>Shipped: <b>${d.shipped}</b><br>7-day average: <b>${a.v.toFixed(1)}</b>${a.full?"":" (first week)"}${imps.length?`<br>▲ Improved: ${imps.join(", ")}`:""}`;
+    const d=rows[i],a=avg[i];cross.setAttribute("x1",x(i));cross.setAttribute("x2",x(i));cross.setAttribute("opacity",.5);
+    const imps=(impBy[d.week]||[]).map(u=>`Station ${u.position+1} ${u.kind==="min"?"minimum":"maximum"}`);
+    tip.innerHTML=`<b>Week ${d.week}</b> · month ${Math.ceil(d.week/WEEKS_PER_MONTH)}${d.week>WEEK_LIMIT?" · free play":""}<br>Shipped: <b>${d.shipped}</b><br>4-week average: <b>${a.v.toFixed(1)}</b>${a.full?"":" (first month)"}${imps.length?`<br>▲ Improved: ${imps.join(", ")}`:""}`;
     tip.hidden=false;const tx=x(i)/W*r.width;const tw=tip.offsetWidth;tip.style.left=Math.max(0,Math.min(r.width-tw,tx+(tx>r.width/2?-tw-12:12)))+"px"};
   hit.addEventListener("pointermove",show);hit.addEventListener("pointerdown",show);
   hit.addEventListener("pointerleave",()=>{tip.hidden=true;cross.setAttribute("opacity",0)});
@@ -802,62 +888,75 @@ function renderUpgradePanel(){
   const tools=document.createElement("div");tools.append(back,closeBtn());
   head.append(t,tools);
   const ch=document.createElement("div");ch.className="choices";
-  const mk=(cls,title,desc,dis,kind)=>{const b=document.createElement("button");b.type="button";b.className="choice "+cls;b.disabled=dis||uiState.busy;b.dataset.kind=kind;
-    const s=document.createElement("strong");s.textContent=title;const sp=document.createElement("span");sp.textContent=desc;b.append(s,sp);b.addEventListener("click",()=>doImprove(kind));return b};
-  ch.append(mk("","↑ Raise Minimum",canMin?`Better bad days: +1 to the worst possible roll · ${money(IMPROVEMENT_COST)}`:"Unavailable: this station is already highly consistent (its worst day is one unit below its best). Raise Maximum is still available.",!canMin,"min"),
-            mk("upper","↑ Raise Maximum",`Better good days: +1 to the best possible roll · ${money(IMPROVEMENT_COST)}`,false,"max"));
-  const p=document.createElement("p");p.textContent=`Improvements already made here: ${done}. Takes effect from the next day you advance. Does this station limit what the factory ships?`;
+  const mk=(cls,title,desc,dis,kind)=>{
+    const n=boughtThisWeek(state,pos,kind), wrap=document.createElement("div");wrap.className="choice-wrap"+(n?" bought":"");wrap.dataset.kind=kind;
+    const b=document.createElement("button");b.type="button";b.className="choice";b.disabled=dis||uiState.busy;b.dataset.kind=kind;
+    const s=document.createElement("strong");s.textContent=title;const sp=document.createElement("span");sp.textContent=desc;b.append(s,sp);
+    if(n){const ok=document.createElement("em");ok.className="bought-note";ok.textContent=`✓ ${kind==="min"?"Minimum":"Maximum"} raised${n>1?` ×${n}`:""} · ${money(n*IMPROVEMENT_COST)} spent · takes effect next week. Click again to buy another.`;b.append(ok)}
+    b.addEventListener("click",()=>doImprove(kind)); wrap.append(b);
+    if(n){const u=document.createElement("button");u.type="button";u.className="undo";u.textContent="Undo";u.disabled=uiState.busy;u.setAttribute("aria-label",`Undo ${kind==="min"?"Raise Minimum":"Raise Maximum"}`);u.addEventListener("click",()=>doUndo(kind));wrap.append(u)}
+    return wrap};
+  ch.append(mk("","↑ Raise Minimum",canMin?`Better bad days: +1 to the worst possible daily roll · ${money(IMPROVEMENT_COST)}`:"Unavailable: this station is already highly consistent (its worst day is one unit below its best). Raise Maximum is still available.",!canMin,"min"),
+            mk("upper","↑ Raise Maximum",`Better good days: +1 to the best possible daily roll · ${money(IMPROVEMENT_COST)}`,false,"max"));
+  const p=document.createElement("p");p.textContent=`Improvements already made here: ${done}. Takes effect from the next week you advance. Does this station limit what the factory ships?`;
   panel.append(head,ch,p);
 }
 function selectStation(i,keepPicking=false){
   uiState.selected=i; if(!keepPicking) uiState.picking=false; refreshScene(); renderUpgradePanel();
   if(i!==null&&window.innerWidth<700) $("upgradePanel").scrollIntoView({behavior:reducedMotion()?"auto":"smooth",block:"nearest"});
 }
+function doUndo(kind){
+  if(uiState.busy||uiState.selected===null) return;
+  const pos=uiState.selected, res=undoImprovement(state,pos,kind);
+  if(!res.ok){setMessage(res.reason==="order"?`Undo the Raise Minimum on Station ${pos+1} first.`:"Nothing to undo this week.");return}
+  setMessage(`Station ${pos+1}: ${kind==="min"?"Raise Minimum":"Raise Maximum"} undone. ${money(IMPROVEMENT_COST)} refunded.`);
+  save(); renderNumbers(); refreshScene();
+}
 function doImprove(kind){
   if(uiState.busy||uiState.selected===null) return;
   const pos=uiState.selected, res=applyImprovement(state,pos,kind);
   if(!res.ok){setMessage(`Station ${pos+1} is already highly consistent, so Raise Minimum is unavailable. Raise Maximum is still available.`);renderUpgradePanel();return}
-  setMessage(`Station ${pos+1}: ${kind==="min"?"minimum":"maximum"} raised for ${money(IMPROVEMENT_COST)}. Advance and watch whether shipments, and profit, respond.${state.day>=DAY_LIMIT?" (Free play: your day-${DAY_LIMIT} record is locked.)":""}`);
+  setMessage(`Station ${pos+1}: ${kind==="min"?"minimum":"maximum"} raised for ${money(IMPROVEMENT_COST)}. Advance and watch whether shipments, and profit, respond.${weeksOf(state)>=WEEK_LIMIT?" (Free play: your week-"+WEEK_LIMIT+" record is locked.)":""}`);
   save(); renderNumbers(); refreshScene();
 }
 
-/* ---------- 10. Advancing time ---------- */
+/* ---------- 10. Advancing time (one week = five animated workdays, one report) ---------- */
 async function advance(n){
   if(uiState.busy) return;
-  if(state.day<DAY_LIMIT) n=Math.min(n,DAY_LIMIT-state.day);
+  if(!state.metric){openReportChooser();return}
+  const w0=weeksOf(state);
+  if(w0<WEEK_LIMIT) n=Math.min(n,WEEK_LIMIT-w0);
   uiState.busy=true; renderNumbers();
-  const dur=reducedMotion()?0:(n===1?1500:620);
-  let hit20=false;
+  const dur=reducedMotion()?0:(n===1?520:230);
+  let hitEnd=false;
   for(let k=0;k<n;k++){
-    const rec=stepDay(state);
-    if(state.day===DAY_LIMIT){recordGame();hit20=true}
+    const recs=stepWeek(state), w=weeksOf(state);
+    if(w===WEEK_LIMIT){recordGame();hitEnd=true}
     save();
-    await playDay(rec,dur);
+    for(let d=0;d<recs.length;d++){ $("gameStatus").textContent=`Week ${w}: workday ${d+1} of ${DAYS_PER_WEEK}…`; await playDay(recs[d],dur); }
     renderNumbers(); refreshScene();
-    const starved=rec.output.map((o,i)=>o<rec.possible[i]?i+1:null).filter(Boolean);
-    setMessage(`Day ${rec.day}: shipped ${rec.shipped} unit${rec.shipped===1?"":"s"} (+${money(rec.shipped*UNIT_THROUGHPUT)}).`+
-      (starved.length?` Waiting for material: Station${starved.length>1?"s":""} ${starved.join(", ")}.`:" Every station made its full roll.")+
-      (state.day<DAY_LIMIT?` ${DAY_LIMIT-state.day} days left.`:state.day===DAY_LIMIT?"":" Free play.")+
-      (k<n-1?` (Day ${k+1} of ${n})`:""));
+    const shipped=recs.reduce((a,r)=>a+r.shipped,0);
+    setMessage(`Week ${w} report: shipped ${shipped} units (+${money(shipped*UNIT_THROUGHPUT)}) against ${money(WEEKLY_OE)} operating expense.`+
+      (w<WEEK_LIMIT?` ${plural(WEEK_LIMIT-w,"week")} left.`:w===WEEK_LIMIT?"":" Free play.")+(n>1&&k<n-1?` (Week ${k+1} of ${n})`:""));
   }
   uiState.busy=false; renderNumbers();
-  if(hit20){ setMessage(`Day ${DAY_LIMIT} complete: ${state.shipments} shipped, net profit ${money(state.finished.profit)}. Your record is saved. Keep experimenting or start a new game.`); showResults(); }
+  if(hitEnd){ setMessage(`Six months complete: ${state.shipments} shipped, net profit ${money(state.finished.profit)}. Your record is saved. Keep experimenting or start a new game.`); showResults(); }
 }
 
-/* ---------- 11. Day-21 results, recognition and reveal ---------- */
+/* ---------- 11. Results, recognition, report debrief and reveal ---------- */
+const stationName=(f,i)=>`Station ${i+1} (${CONFIG.MACHINES[f.order[i]].name})`;
+function constraintPositions(order,machines){const a=order.map(id=>avgOf(machines[id]));const mn=Math.min(...a);return a.map((v,i)=>v===mn?i:null).filter(v=>v!==null)}
 function showResults(){
   const f=state.finished; if(!f) return;
   f.seen=true; save();
   const body=$("resultBody"); body.replaceChildren();
+  const recog=f.metTarget||f.newBest, delta=f.profit-f.baseline.profit;
   const h=document.createElement("div");
-  const recog=f.metTarget||f.newBest;
-  const delta=f.profit-f.baseline.profit;
   h.innerHTML=(recog?`<div class="banner"><strong>You're a Moneymaker!</strong><span>${[f.metTarget?`You hit the ${TARGET}-unit target`:null,f.newBest?`New personal best (previous ${money(f.prevBest)})`:null].filter(Boolean).join(" · ")}</span></div>`:"")+
-   `<h2 id="resultTitle">${recog?"Profit delivered.":`Day ${DAY_LIMIT} complete.`}</h2>
+   `<h2 id="resultTitle">${recog?"Profit delivered.":"Six months complete."}</h2>
    <div class="result-grid"><div><small>Net profit</small><strong>${money(f.profit)}</strong></div><div><small>Shipped / target</small><strong>${f.shipments} / ${TARGET}</strong></div><div><small>Improvements</small><strong>${f.upgrades} (${money(f.spending)})</strong></div></div>
-   <p>With <strong>no improvements</strong>, these exact dice rolls would have earned <strong>${money(f.baseline.profit)}</strong> (${f.baseline.shipments} shipped). Your decisions ${delta>=0?"added":"cost"} <strong>${money(Math.abs(delta))}</strong>.</p>
-   ${!f.metTarget?`<p>Missed the target? Look for the station with a big pile of crates in front of it and a small pile after it.</p>`:""}`;
-  body.append(h);
+   <p>With <strong>no improvements</strong>, these exact dice rolls would have earned <strong>${money(f.baseline.profit)}</strong> (${f.baseline.shipments} shipped). Your decisions ${delta>=0?"added":"cost"} <strong>${money(Math.abs(delta))}</strong>.</p>`;
+  body.append(h, buildReportDebrief(f));
   const revealBtn=document.createElement("button");revealBtn.type="button";revealBtn.className="secondary";revealBtn.style.width="100%";revealBtn.textContent="Reveal the machines";
   const reveal=document.createElement("div");reveal.hidden=true;
   revealBtn.addEventListener("click",()=>{reveal.hidden=!reveal.hidden;revealBtn.textContent=reveal.hidden?"Reveal the machines":"Hide the machines"});
@@ -869,45 +968,83 @@ function showResults(){
   body.append(act);
   openModal("resultModal");
 }
+function buildReportDebrief(f){
+  const key=f.metric, rep=CONFIG.REPORTS[key], vals=f.metrics.map(m=>m[key]);
+  const weakest=vals.indexOf(Math.min(...vals.filter(v=>v!=null)));
+  const cons=constraintPositions(f.order,f.machines);
+  const hit=cons.includes(weakest);
+  const why={avg:"Average throughput includes starving, so every station after the constraint reports almost the same number as the constraint itself. Its lowest number is often a starved station, not the slow one.",
+    oee:"OEE counts waiting for material against a station, so the stations after the constraint look worst, while the constraint (and Station 1) look best. Chasing the lowest OEE spends money on starved machines.",
+    sat:"SAT reflects each machine's own dice, so over enough weeks the lowest SAT is the constraint. Over only a few weeks, luck can still mislead it."}[key];
+  const d=document.createElement("div");d.className="debrief";
+  d.innerHTML=`<h3>You managed by ${rep.label}</h3>
+   <p>At the end, its weakest-looking station was <strong>${stationName(f,weakest)}</strong> (${fmtMetric(key,vals[weakest])}). The real constraint ${cons.length>1?"was shared by":"was"} <strong>${cons.map(i=>stationName(f,i)).join(" and ")}</strong>.
+   ${hit?"✔ Your report pointed at the constraint.":"✘ Your report pointed away from the constraint."}</p><p>${why}</p>`;
+  // what the constraint did over the game
+  const orig=CONFIG.MACHINES.map(m=>({...m})).sort((a,b)=>avgOf(a)-avgOf(b));
+  const first=orig[0], second=orig[1], pos=id=>f.order.indexOf(id)+1;
+  const count={};(f.upgradeList||[]).forEach(u=>{count[u.machine]=(count[u.machine]||0)+1});
+  const list=Object.entries(count).map(([id,n])=>`${CONFIG.MACHINES[id].name} ×${n}`).join(", ")||"none";
+  const p2=document.createElement("p");
+  p2.innerHTML=`<strong>Your improvements:</strong> ${list}. This plant had two slow machines: the <strong>${first.name}</strong> (Station ${pos(first.id)}) and the <strong>${second.name}</strong> (Station ${pos(second.id)}). Improving the ${first.name.toLowerCase()} twice makes the ${second.name.toLowerCase()} the constraint, and one ${second.name.toLowerCase()} improvement after that earns the most. Money spent anywhere else mostly became waiting inventory.`;
+  d.append(p2); return d;
+}
 function buildReveal(f){
   const wrap=document.createElement("div");
-  const avgs=f.order.map(id=>avgOf(f.machines[id])); const minAvg=Math.min(...avgs);
-  const gaps=f.gap; const maxGap=Math.max(...gaps.filter(g=>g!==null));
+  const cons=constraintPositions(f.order,f.machines);
   const t=document.createElement("table");t.className="reveal-table";
-  t.innerHTML=`<thead><tr><th>Station</th><th>Machine</th><th>Hidden dice</th><th>Avg roll</th><th>OEE</th><th>Pile in − out</th></tr></thead>`;
+  const th=k=>`<th${f.metric===k?' class="yours"':""}>${{avg:"Avg/wk",sat:"SAT/wk",oee:"OEE"}[k]}${f.metric===k?" ★":""}</th>`;
+  t.innerHTML=`<thead><tr><th>Station</th><th>Machine</th><th>Daily dice</th>${th("avg")}${th("sat")}${th("oee")}<th>Pile in / out</th></tr></thead>`;
   const tb=document.createElement("tbody");
-  f.order.forEach((id,i)=>{const m=f.machines[id],orig=CONFIG.MACHINES[id];const tr=document.createElement("tr");if(avgs[i]===minAvg)tr.className="constraint";
+  f.order.forEach((id,i)=>{const m=f.machines[id],orig=CONFIG.MACHINES[id],mt=f.metrics[i];const tr=document.createElement("tr");if(cons.includes(i))tr.className="constraint";
     const changed=m.lo!==orig.lo||m.hi!==orig.hi;
-    tr.innerHTML=`<td>${i+1}${avgs[i]===minAvg?'<span class="tag">CONSTRAINT</span>':""}</td><td>${orig.name}</td><td>${m.lo}–${m.hi}${changed?` <span class="footnote">(was ${orig.lo}–${orig.hi})</span>`:""}</td><td>${avgs[i]}</td><td>${f.oee[i]==null?"—":Math.round(f.oee[i]*100)+"%"}</td><td>${gaps[i]===null?"raw ∞":(gaps[i]>0?"+":"")+gaps[i]}${gaps[i]!==null&&gaps[i]===maxGap&&maxGap>0?" ◀":""}</td>`;
+    tr.innerHTML=`<td>${i+1}${cons.includes(i)?'<span class="tag">CONSTRAINT</span>':""}</td><td>${orig.name}</td><td>${m.lo}–${m.hi}${changed?` <span class="footnote">(was ${orig.lo}–${orig.hi})</span>`:""}</td><td>${mt.avg.toFixed(1)}</td><td>${mt.sat.toFixed(1)}</td><td>${Math.round(mt.oee*100)}%</td><td>${i===0?"raw":f.wip[i-1]} / ${i===4?"shipped":f.wip[i]}</td>`;
     tb.append(tr)});
   t.append(tb); wrap.append(t);
   const p=document.createElement("div");
-  p.innerHTML=`<p><strong>Find the constraint:</strong> it is the station with the lowest average roll. On the factory floor it shows as the <strong>biggest pile in front and smallest pile after</strong> (the largest "pile in − out", marked ◀). Every unit the constraint gains is a unit the whole factory ships. A unit gained anywhere else mostly becomes more waiting inventory.</p>
-   <p><strong>Read the OEE carefully:</strong> the constraint runs near 100% because it almost never waits. Stations after it look "inefficient" because they are starved, not broken. Fixing them spends money and ships nothing extra. Station 1 never runs out of raw material, so it always looks busy, but its extra output only piles up as inventory. A high OEE away from the constraint is not profit.</p>`;
+  p.innerHTML=`<p>★ marks the report you chose. <strong>Find the constraint:</strong> it has the lowest standalone rate. On the factory floor, the pile in front of it keeps growing and the pile after it stays nearly empty. Careful: a second slow machine upstream can build an even bigger pile in front of itself. That is what makes it easy to mistake for the constraint, and it is the one that takes over once you lift the first. Every unit the constraint gains is a unit the whole factory ships.</p>
+   <p><strong>Then look again:</strong> once you lift the constraint, another machine takes its place. Keep improving the old one and the extra capacity just waits.</p>`;
   wrap.append(p); return wrap;
 }
 
-/* ---------- 12. Replays ---------- */
+/* ---------- 12. Replays and the report chooser ---------- */
 function startOver(mode){
   if(uiState.busy) return;
+  const prev=state.metric;
   if(mode==="replay") state=createGame(state.order,randomSeed(),state.plant);
   else if(mode==="same") state=createGame(state.order,state.seed,state.plant);
   else if(mode==="different") state=createGame(nextOrder(state.order),randomSeed(),state.plant+1);
-  uiState.selected=null;
+  uiState.selected=null; uiState.picking=false;
   setMessage(mode==="different"?`Welcome to Plant ${plantName(state.plant)}. The same five machines, in new positions. Where is the constraint now?`:
-    mode==="same"?"Same plant, same dice sequence. Try a different strategy and compare.":"New game, new dice rolls. Advance a day and watch where crates pile up.");
+    mode==="same"?"Same plant, same dice sequence. Try a different strategy, or a different report, and compare.":"New game, new dice rolls.");
   save(); refreshScene(); renderNumbers(); window.scrollTo({top:0,behavior:reducedMotion()?"auto":"smooth"});
+  openReportChooser(prev);
+}
+function openReportChooser(prev=null){
+  const list=$("reportChoices"); list.replaceChildren();
+  Object.entries(CONFIG.REPORTS).forEach(([key,r])=>{
+    const b=document.createElement("button");b.type="button";b.className="report-choice";b.dataset.report=key;
+    b.innerHTML=`<strong>${r.label}</strong><span>${r.desc}</span>${prev===key?'<em>Last game</em>':""}`;
+    b.addEventListener("click",()=>chooseReport(key));list.append(b)});
+  $("reportModal").hidden=false;document.body.style.overflow="hidden";
+  (list.querySelector(`[data-report="${prev}"]`)||list.firstChild).focus();
+}
+function chooseReport(key){
+  state.metric=key; save();
+  $("reportModal").hidden=true; document.body.style.overflow="";
+  setMessage(`Managing by ${CONFIG.REPORTS[key].label}. Press Advance 1 Week and watch the crates move. Where do they pile up?`);
+  refreshScene(); renderNumbers();
 }
 
 /* ---------- 13. Modals & wiring ---------- */
 let lastFocus=null;
 function openModal(id){lastFocus=document.activeElement;$(id).hidden=false;document.body.style.overflow="hidden";const c=$(id).querySelector("[data-close]");c&&c.focus()}
 function closeModal(id){$(id).hidden=true;document.body.style.overflow="";lastFocus&&lastFocus.focus&&lastFocus.focus()}
-document.querySelectorAll(".modal-backdrop").forEach(b=>{b.addEventListener("click",e=>{if(e.target===b||e.target.closest("[data-close]"))closeModal(b.id)})});
-document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".modal-backdrop:not([hidden])").forEach(b=>closeModal(b.id))});
+document.querySelectorAll(".modal-backdrop:not([data-locked])").forEach(b=>{b.addEventListener("click",e=>{if(e.target===b||e.target.closest("[data-close]"))closeModal(b.id)})});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".modal-backdrop:not([hidden]):not([data-locked])").forEach(b=>closeModal(b.id))});
 $("howButton").addEventListener("click",()=>openModal("howModal"));
 $("day1").addEventListener("click",()=>advance(1));
-$("day7").addEventListener("click",()=>advance(7));
+$("day7").addEventListener("click",()=>advance(WEEKS_PER_MONTH));
 $("improveButton").addEventListener("click",()=>{
   if(uiState.selected===null) uiState.picking=true;
   renderUpgradePanel();
@@ -915,7 +1052,9 @@ $("improveButton").addEventListener("click",()=>{
   setTimeout(()=>s.classList.remove("pick-me"),3200);
   $("upgradePanel").scrollIntoView({behavior:reducedMotion()?"auto":"smooth",block:"nearest"});
 });
-$("oeeButton").addEventListener("click",()=>{uiState.showOEE=!uiState.showOEE;$("oeeButton").setAttribute("aria-pressed",String(uiState.showOEE));$("oeeButton").textContent=uiState.showOEE?"Hide OEE":"Show OEE";$("oeePanel").hidden=!uiState.showOEE;refreshScene()});
+$("reportButton").addEventListener("click",()=>{
+  if(!state.metric){openReportChooser();return}
+  uiState.showReport=!uiState.showReport;$("reportButton").setAttribute("aria-expanded",String(uiState.showReport));$("reportPanel").hidden=!uiState.showReport});
 $("replayButton").addEventListener("click",()=>startOver("replay"));
 $("differentButton").addEventListener("click",()=>startOver("different"));
 $("resetButton").addEventListener("click",()=>startOver("same"));
@@ -924,19 +1063,21 @@ $("year").textContent=new Date().getFullYear();
 document.querySelectorAll(".costTxt").forEach(e=>e.textContent=money(IMPROVEMENT_COST));
 document.querySelectorAll(".targetTxt").forEach(e=>e.textContent=TARGET);
 document.querySelectorAll(".tpRate2").forEach(e=>e.textContent=money(UNIT_THROUGHPUT));
-$("tpRate").textContent=money(UNIT_THROUGHPUT); $("oeRate").textContent=money(DAILY_OE);
+$("tpRate").textContent=money(UNIT_THROUGHPUT); $("oeRate").textContent=money(WEEKLY_OE);
 let lastNarrow=null;
 let chartTimer=null;
 window.addEventListener("resize",()=>{const n=isNarrow();if(n!==lastNarrow&&!uiState.busy){lastNarrow=n;buildScene()}
   clearTimeout(chartTimer);chartTimer=setTimeout(renderBars,120)});
 
 lastNarrow=isNarrow(); buildScene(); renderNumbers();
-setMessage(!state.day?"Press Advance 1 Day and watch the crates move. Where do they pile up?":
-  state.day>=DAY_LIMIT?`Your day-${DAY_LIMIT} score is ${money(state.finished?state.finished.profit:profitOf(state))}. Keep experimenting or start a new game.`:`Game restored at day ${state.day}.`);
+const wNow=weeksOf(state);
+setMessage(!state.metric?"Choose the report you will manage by.":!wNow?`Managing by ${CONFIG.REPORTS[state.metric].label}. Press Advance 1 Week and watch the crates move.`:
+  wNow>=WEEK_LIMIT?`Your six-month score is ${money(state.finished?state.finished.profit:profitOf(state))}. Keep experimenting or start a new game.`:`Game restored at week ${wNow}.`);
+if(!state.metric) openReportChooser();
 
 /* Test hook (pure rules + read-only views); not used by the interface. */
-window.__moneymaker={CONFIG,createGame,stepDay,applyImprovement,profitOf,oeeOf,pileGap,baselineProfit,nextOrder,pseudoRandom,rollFor,
-  getState:()=>state,animLog,isBusy:()=>uiState.busy,scene};
+window.__moneymaker={CONFIG,createGame,stepDay,stepWeek,applyImprovement,undoImprovement,profitOf,metricsOf,pileGap,baselineProfit,nextOrder,pseudoRandom,rollFor,weeksOf,
+  getState:()=>state,animLog,isBusy:()=>uiState.busy,scene,chooseReport};
 })();
 </script>
 </body>
